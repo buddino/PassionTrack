@@ -79,13 +79,13 @@ export default function SettingsPage() {
                         <input
                             type="range"
                             min={0}
-                            max={10}
+                            max={3}
                             step={0.25}
                             value={weights[i]}
                             onChange={(e) => handleWeightChange(i, parseFloat(e.target.value))}
                             className="custom-slider w-full"
                             style={{
-                                background: `linear-gradient(to right, rgba(139,0,255,0.8) 0%, rgba(139,0,255,0.8) ${(weights[i] / 10) * 100}%, rgba(255,255,255,0.1) ${(weights[i] / 10) * 100}%, rgba(255,255,255,0.1) 100%)`,
+                                background: `linear-gradient(to right, rgba(139,0,255,0.8) 0%, rgba(139,0,255,0.8) ${(weights[i] / 3) * 100}%, rgba(255,255,255,0.1) ${(weights[i] / 10) * 100}%, rgba(255,255,255,0.1) 100%)`,
                             }}
                         />
                     </div>
