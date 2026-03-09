@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { getEntries } from '@/lib/store'
 import type { PerformanceEntry } from '@/lib/store'
-import HeatmapCalendar from '@/components/HeatmapCalendar'
 import TrendChart from '@/components/TrendChart'
 import { STATEMENTS } from '@/lib/constants'
 
@@ -81,9 +80,6 @@ export default function StatsPage() {
             <div className="mb-2">
                 <h1 className="text-3xl font-black" style={{ color: '#FF0033' }}>📊 Statistiche</h1>
             </div>
-
-            {/* Heatmap */}
-            <HeatmapCalendar entries={entries} />
 
             {/* Global stats */}
             {globalStats && (
