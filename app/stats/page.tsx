@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { getEntries } from '@/lib/store'
 import type { PerformanceEntry } from '@/lib/store'
 import MonthlyCalendar from '@/components/MonthlyCalendar'
+import TimeHistogram from '@/components/TimeHistogram'
 import TrendChart from '@/components/TrendChart'
 import { STATEMENTS } from '@/lib/constants'
 
@@ -63,7 +64,13 @@ export default function StatsPage() {
         })
         const peakDay = dayCounts.indexOf(Math.max(...dayCounts))
         const peakHour = hourBuckets.indexOf(Math.max(...hourBuckets))
-        return { avg, best, peakDay, peakHour, topPartner: partners[0]?.nick ?? '—' }
+
+        const hourlyData = hourBuckets.map((count, hour) => ({
+            hour: hour.toString().padStart(2, '0'),
+            count
+        }))
+
+        return { avg, best, peakDay, peakHour, topPartner: partners[0]?.nick ?? '—', hourlyData }
     }, [entries, partners])
 
     const partnerStats = useMemo(() => {
@@ -147,16 +154,20 @@ export default function StatsPage() {
 
             {/* Global stats */}
             {globalStats && (
-                <div>
-                    <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3">🌍 Global</h2>
-                    <div className="grid grid-cols-2 gap-2">
-                        <StatCard label="Media globale" value={globalStats.avg.toFixed(2)} emoji="📈" />
-                        <StatCard label="Partner top" value={globalStats.topPartner} emoji="👑" />
-                        <StatCard label="Giorno più attivo" value={WEEKDAY_NAMES[globalStats.peakDay]} emoji="📅" />
-                        <StatCard label="Orario di picco" value={`${globalStats.peakHour}:00`} emoji="⏰" />
-                        <StatCard label="Sessioni totali" value={entries.length} emoji="🎯" />
-                        <StatCard label="Record assoluto" value={globalStats.best.weightedAvg.toFixed(1)} emoji="🏆" />
+                <div className="space-y-4">
+                    <div>
+                        <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3">🌍 Global</h2>
+                        <div className="grid grid-cols-2 gap-2">
+                            <StatCard label="Media globale" value={globalStats.avg.toFixed(2)} emoji="📈" />
+                            <StatCard label="Partner top" value={globalStats.topPartner} emoji="👑" />
+                            <StatCard label="Giorno più attivo" value={WEEKDAY_NAMES[globalStats.peakDay]} emoji="📅" />
+                            <StatCard label="Orario di picco" value={`${globalStats.peakHour}:00`} emoji="⏰" />
+                            <StatCard label="Sessioni totali" value={entries.length} emoji="🎯" />
+                            <StatCard label="Record assoluto" value={globalStats.best.weightedAvg.toFixed(1)} emoji="🏆" />
+                        </div>
                     </div>
+
+                    <TimeHistogram data={globalStats.hourlyData} />
                 </div>
             )}
 

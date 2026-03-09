@@ -119,7 +119,7 @@ export default function HomePage() {
           <h1 className="text-3xl font-black tracking-tight" style={{ color: '#FF0033' }}>
             🔥 PassionTrack
           </h1>
-          <p className="text-white/40 text-sm mt-1">Nuovo rapporto</p>
+          <p className="text-white/40 text-sm mt-1">Nuovo "allenamento"</p>
         </div>
 
         {/* Progress bar (hidden on done step) */}
