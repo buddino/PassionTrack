@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import SliderInput from '@/components/SliderInput'
 import MoodPicker from '@/components/MoodPicker'
 import PartnerDropdown from '@/components/PartnerDropdown'
+import CustomDatePicker from '@/components/CustomDatePicker'
 import { saveEntry, getSettings } from '@/lib/store'
 import { weightedAverage } from '@/lib/scoring'
 import { STATEMENTS, DEFAULT_WEIGHTS } from '@/lib/constants'
@@ -31,6 +32,7 @@ export default function HomePage() {
   const [step, setStep] = useState<Step>('partner')
   const [partnerNick, setPartnerNick] = useState('')
   const [partnerGender, setPartnerGender] = useState<Gender>('M')
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [mood, setMood] = useState(3)
   const [scores, setScores] = useState<number[]>(Array(10).fill(5))
   const [weights, setWeights] = useState(DEFAULT_WEIGHTS)
@@ -63,7 +65,7 @@ export default function HomePage() {
       id: uuid(),
       partnerNick: partnerNick.trim(),
       partnerGender,
-      datetime: new Date().toISOString(),
+      datetime: `${date}T${new Date().toISOString().slice(11)}`,
       mood,
       scores,
       weightedAvg: avg,
@@ -79,6 +81,7 @@ export default function HomePage() {
     setStep('partner')
     setPartnerNick('')
     setPartnerGender('M')
+    setDate(new Date().toISOString().slice(0, 10))
     setMood(3)
     setScores(Array(10).fill(5))
     setSavedScore(null)
@@ -143,7 +146,7 @@ export default function HomePage() {
               exit={{ opacity: 0, y: -24 }}
               transition={{ duration: 0.35 }}
             >
-              <div className="glass-card p-5 mb-4">
+              <div className="glass-card p-5 mb-4 relative z-10">
                 <h2 className="text-lg font-bold text-white mb-4">👤 Con chi?</h2>
                 <PartnerDropdown
                   nick={partnerNick}
@@ -151,6 +154,15 @@ export default function HomePage() {
                   onNickChange={setPartnerNick}
                   onGenderChange={setPartnerGender}
                 />
+                <div className="mt-5">
+                  <label className="text-xs font-semibold text-white/50 uppercase tracking-widest mb-2 block">
+                    📅 Data Sessione
+                  </label>
+                  <CustomDatePicker
+                    date={date}
+                    onChange={setDate}
+                  />
+                </div>
               </div>
               <motion.button
                 type="button"
