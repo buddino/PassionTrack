@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { getEntries } from '@/lib/store'
 import type { PerformanceEntry } from '@/lib/store'
+import MonthlyCalendar from '@/components/MonthlyCalendar'
 import TrendChart from '@/components/TrendChart'
 import { STATEMENTS } from '@/lib/constants'
 
@@ -22,10 +23,24 @@ function StatCard({ label, value, emoji }: { label: string; value: string | numb
 export default function StatsPage() {
     const [entries, setEntries] = useState<PerformanceEntry[]>([])
     const [selectedPartner, setSelectedPartner] = useState<string | null>(null)
+    const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
     useEffect(() => {
         setEntries(getEntries())
     }, [])
+
+    const filteredEntries = useMemo(() => {
+        let es = entries
+        if (selectedPartner) {
+            es = es.filter(e => e.partnerNick === selectedPartner)
+        }
+        return es
+    }, [entries, selectedPartner])
+
+    const dayEntries = useMemo(() => {
+        if (!selectedDate) return []
+        return entries.filter(e => e.datetime.slice(0, 10) === selectedDate)
+    }, [entries, selectedDate])
 
     const partners = useMemo(() => {
         const map = new Map<string, number>()
@@ -80,6 +95,55 @@ export default function StatsPage() {
             <div className="mb-2">
                 <h1 className="text-3xl font-black" style={{ color: '#FF0033' }}>📊 Statistiche</h1>
             </div>
+
+            {/* Monthly Calendar */}
+            <MonthlyCalendar
+                entries={entries}
+                selectedDate={selectedDate}
+                onDateSelect={setSelectedDate}
+            />
+
+            {/* Day Details */}
+            <AnimatePresence>
+                {selectedDate && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                    >
+                        <div className="glass-card p-4 mb-4">
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="text-sm font-bold text-white/60 uppercase tracking-widest">
+                                    📅 Rapporti del {new Date(selectedDate).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                </h3>
+                                <button onClick={() => setSelectedDate(null)} className="text-[10px] text-white/30 hover:text-white/50">Chiudi</button>
+                            </div>
+                            <div className="space-y-2">
+                                {dayEntries.length > 0 ? dayEntries.map(e => (
+                                    <div key={e.id} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                        <div className="flex items-center gap-3">
+                                            <div className="text-xl">
+                                                {e.partnerGender === 'M' ? '🧔' : e.partnerGender === 'F' ? '👩' : '🌈'}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-white">{e.partnerNick}</p>
+                                                <p className="text-[10px] text-white/40">{e.datetime.split('T')[1].slice(0, 5)}</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-lg font-black" style={{ color: '#FF0033' }}>{e.weightedAvg.toFixed(1)}</p>
+                                            <p className="text-[9px] text-white/30 uppercase tracking-tighter">Score</p>
+                                        </div>
+                                    </div>
+                                )) : (
+                                    <p className="text-xs text-white/30 italic py-2 text-center">Nessun rapporto registrato</p>
+                                )}
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Global stats */}
             {globalStats && (
