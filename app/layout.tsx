@@ -1,13 +1,18 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import BottomNav from '@/components/BottomNav'
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: '#0a0a0f',
+}
 
 export const metadata: Metadata = {
   title: 'PassionTrack',
   description: 'Track your intimate performances — private, local, yours.',
   manifest: '/manifest.json',
-  themeColor: '#0a0a0f',
-  viewport: { width: 'device-width', initialScale: 1, maximumScale: 1 },
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'PassionTrack' },
 }
 
