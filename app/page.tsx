@@ -1,65 +1,301 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useState, useCallback, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import dynamic from 'next/dynamic'
+import SliderInput from '@/components/SliderInput'
+import MoodPicker from '@/components/MoodPicker'
+import PartnerDropdown from '@/components/PartnerDropdown'
+import { saveEntry, getSettings } from '@/lib/store'
+import { weightedAverage } from '@/lib/scoring'
+import { STATEMENTS, DEFAULT_WEIGHTS } from '@/lib/constants'
+import type { Gender } from '@/lib/constants'
+
+const Confetti = dynamic(() => import('react-confetti'), { ssr: false })
+
+const STEPS = ['partner', 'mood', 'sliders', 'done'] as const
+type Step = typeof STEPS[number]
+
+function useWindowSize() {
+  const [size, setSize] = useState({ width: 400, height: 800 })
+  useEffect(() => {
+    const update = () => setSize({ width: window.innerWidth, height: window.innerHeight })
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
+  return size
+}
+
+export default function HomePage() {
+  const [step, setStep] = useState<Step>('partner')
+  const [partnerNick, setPartnerNick] = useState('')
+  const [partnerGender, setPartnerGender] = useState<Gender>('M')
+  const [mood, setMood] = useState(3)
+  const [scores, setScores] = useState<number[]>(Array(10).fill(5))
+  const [weights, setWeights] = useState(DEFAULT_WEIGHTS)
+  const [showConfetti, setShowConfetti] = useState(false)
+  const [savedScore, setSavedScore] = useState<number | null>(null)
+  const { width, height } = useWindowSize()
+
+  useEffect(() => {
+    const s = getSettings()
+    setWeights(s.weights)
+  }, [])
+
+  const avg = weightedAverage(scores, weights)
+
+  const handleScore = useCallback((i: number, v: number) => {
+    setScores((prev) => {
+      const next = [...prev]
+      next[i] = v
+      return next
+    })
+  }, [])
+
+  const handleSave = () => {
+    if (!partnerNick.trim()) { setStep('partner'); return }
+    const uuid = () => 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0
+      return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
+    })
+    const entry = {
+      id: uuid(),
+      partnerNick: partnerNick.trim(),
+      partnerGender,
+      datetime: new Date().toISOString(),
+      mood,
+      scores,
+      weightedAvg: avg,
+    }
+    saveEntry(entry)
+    setSavedScore(avg)
+    setShowConfetti(true)
+    setStep('done')
+    setTimeout(() => setShowConfetti(false), 4500)
+  }
+
+  const handleReset = () => {
+    setStep('partner')
+    setPartnerNick('')
+    setPartnerGender('M')
+    setMood(3)
+    setScores(Array(10).fill(5))
+    setSavedScore(null)
+    setShowConfetti(false)
+  }
+
+  const getStatementLabel = (s: typeof STATEMENTS[0]) => {
+    if (s.id === 7) {
+      return partnerGender === 'M' ? 'Dimensioni e forma' : 'Capienza e profondità'
+    }
+    return s.label
+  }
+
+  const stepIndex = STEPS.indexOf(step)
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <>
+      {showConfetti && (
+        <Confetti
+          width={width}
+          height={height}
+          recycle={false}
+          numberOfPieces={280}
+          colors={['#FF0033', '#8B00FF', '#FF6633', '#FFCC00', '#ffffff']}
+          style={{ position: 'fixed', top: 0, left: 0, zIndex: 100, pointerEvents: 'none' }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+      )}
+
+      <div className="px-4 pt-6">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-black tracking-tight" style={{ color: '#FF0033' }}>
+            🔥 PassionTrack
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+          <p className="text-white/40 text-sm mt-1">Nuova sessione</p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+
+        {/* Progress bar (hidden on done step) */}
+        {step !== 'done' && (
+          <div className="flex gap-1.5 mb-6">
+            {(['partner', 'mood', 'sliders'] as Step[]).map((s, i) => (
+              <div key={s} className="h-1 flex-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{ background: 'linear-gradient(90deg, #FF0033, #8B00FF)' }}
+                  initial={{ width: 0 }}
+                  animate={{ width: i <= stepIndex ? '100%' : '0%' }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        <AnimatePresence mode="wait">
+          {/* STEP 1: Partner */}
+          {step === 'partner' && (
+            <motion.div
+              key="partner"
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -24 }}
+              transition={{ duration: 0.35 }}
+            >
+              <div className="glass-card p-5 mb-4">
+                <h2 className="text-lg font-bold text-white mb-4">👤 Con chi?</h2>
+                <PartnerDropdown
+                  nick={partnerNick}
+                  gender={partnerGender}
+                  onNickChange={setPartnerNick}
+                  onGenderChange={setPartnerGender}
+                />
+              </div>
+              <motion.button
+                type="button"
+                onClick={() => {
+                  if (!partnerNick.trim()) return
+                  setStep('mood')
+                }}
+                className="btn-neon w-full py-4 text-base"
+                whileTap={{ scale: 0.97 }}
+                style={{ opacity: partnerNick.trim() ? 1 : 0.4 }}
+              >
+                Avanti →
+              </motion.button>
+            </motion.div>
+          )}
+
+          {/* STEP 2: Mood */}
+          {step === 'mood' && (
+            <motion.div
+              key="mood"
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -24 }}
+              transition={{ duration: 0.35 }}
+            >
+              <div className="glass-card p-5 mb-4">
+                <h2 className="text-lg font-bold text-white mb-2">🔥 Eccitazione</h2>
+                <p className="text-white/40 text-sm mb-6">Come ti sentivi prima?</p>
+                <MoodPicker value={mood} onChange={setMood} />
+                <p className="text-center mt-4 text-white/50 text-sm font-medium">
+                  {['Spento', 'Tiepido', 'Coinvolto', 'Caldo', 'Infuocato', 'BOLLENTE 🌋'][mood]}
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button type="button" onClick={() => setStep('partner')} className="btn-ghost flex-1 py-4">
+                  ← Indietro
+                </button>
+                <motion.button
+                  type="button"
+                  onClick={() => setStep('sliders')}
+                  className="btn-neon flex-[2] py-4 text-base"
+                  whileTap={{ scale: 0.97 }}
+                >
+                  Avanti →
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* STEP 3: Sliders */}
+          {step === 'sliders' && (
+            <motion.div
+              key="sliders"
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -24 }}
+              transition={{ duration: 0.35 }}
+            >
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-lg font-bold text-white">📋 Voti</h2>
+                  {/* Live score preview */}
+                  <div className="glass-card px-4 py-2 flex items-center gap-2">
+                    <span className="text-white/50 text-xs">Media</span>
+                    <motion.span
+                      key={avg.toFixed(1)}
+                      initial={{ scale: 1.2 }}
+                      animate={{ scale: 1 }}
+                      className="text-xl font-black"
+                      style={{ color: '#FF0033' }}
+                    >
+                      {avg.toFixed(1)}
+                    </motion.span>
+                  </div>
+                </div>
+                {STATEMENTS.map((s, i) => (
+                  <SliderInput
+                    key={s.id}
+                    value={scores[i]}
+                    onChange={(v) => handleScore(i, v)}
+                    label={getStatementLabel(s)}
+                    emoji={s.emoji}
+                    description={s.description}
+                    index={i}
+                  />
+                ))}
+              </div>
+              <div className="flex gap-3 mb-4">
+                <button type="button" onClick={() => setStep('mood')} className="btn-ghost flex-1 py-4">
+                  ← Indietro
+                </button>
+                <motion.button
+                  type="button"
+                  onClick={handleSave}
+                  className="btn-neon flex-[2] py-4 text-base font-bold"
+                  whileTap={{ scale: 0.97 }}
+                  whileHover={{ scale: 1.01 }}
+                >
+                  💾 Salva Performance
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* STEP 4: Done */}
+          {step === 'done' && (
+            <motion.div
+              key="done"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4, type: 'spring', stiffness: 200 }}
+              className="text-center py-8"
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+                className="text-8xl mb-6"
+              >
+                {savedScore !== null && savedScore >= 8 ? '🌋' : savedScore !== null && savedScore >= 5 ? '🔥' : '😏'}
+              </motion.div>
+              <h2 className="text-2xl font-black text-white mb-2">Performance Salvata!</h2>
+              <p className="text-white/50 mb-6">con <span className="text-white font-semibold">{partnerNick}</span></p>
+              <div className="glass-card p-6 mb-8 inline-block mx-auto">
+                <p className="text-white/50 text-sm mb-1">Voto finale</p>
+                <p className="text-5xl font-black" style={{ color: '#FF0033' }}>
+                  {savedScore?.toFixed(1)}
+                </p>
+                <p className="text-white/30 text-sm">/10</p>
+              </div>
+              <div className="flex flex-col gap-3 px-4">
+                <motion.button
+                  type="button"
+                  onClick={handleReset}
+                  className="btn-neon w-full py-4 text-base font-bold"
+                  whileTap={{ scale: 0.97 }}
+                >
+                  ➕ Nuova Sessione
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </>
+  )
 }
