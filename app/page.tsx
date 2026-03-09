@@ -7,6 +7,7 @@ import SliderInput from '@/components/SliderInput'
 import MoodPicker from '@/components/MoodPicker'
 import PartnerDropdown from '@/components/PartnerDropdown'
 import CustomDatePicker from '@/components/CustomDatePicker'
+import HourPicker from '@/components/HourPicker'
 import { saveEntry, getSettings } from '@/lib/store'
 import { weightedAverage } from '@/lib/scoring'
 import { STATEMENTS, DEFAULT_WEIGHTS } from '@/lib/constants'
@@ -33,6 +34,7 @@ export default function HomePage() {
   const [partnerNick, setPartnerNick] = useState('')
   const [partnerGender, setPartnerGender] = useState<Gender>('M')
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [hour, setHour] = useState(() => new Date().getHours())
   const [mood, setMood] = useState(3)
   const [scores, setScores] = useState<number[]>(Array(10).fill(5))
   const [weights, setWeights] = useState(DEFAULT_WEIGHTS)
@@ -65,7 +67,7 @@ export default function HomePage() {
       id: uuid(),
       partnerNick: partnerNick.trim(),
       partnerGender,
-      datetime: `${date}T${new Date().toISOString().slice(11)}`,
+      datetime: `${date}T${hour.toString().padStart(2, '0')}:00:00`,
       mood,
       scores,
       weightedAvg: avg,
@@ -82,6 +84,7 @@ export default function HomePage() {
     setPartnerNick('')
     setPartnerGender('M')
     setDate(new Date().toISOString().slice(0, 10))
+    setHour(new Date().getHours())
     setMood(3)
     setScores(Array(10).fill(5))
     setSavedScore(null)
@@ -154,14 +157,26 @@ export default function HomePage() {
                   onNickChange={setPartnerNick}
                   onGenderChange={setPartnerGender}
                 />
-                <div className="mt-5">
-                  <label className="text-xs font-semibold text-white/50 uppercase tracking-widest mb-2 block">
-                    📅 Data Sessione
-                  </label>
-                  <CustomDatePicker
-                    date={date}
-                    onChange={setDate}
-                  />
+                <div className="mt-5 space-y-4">
+                  {/* Data */}
+                  <div>
+                    <label className="text-xs font-semibold text-white/50 uppercase tracking-widest mb-2 block">
+                      📅 Data
+                    </label>
+                    <CustomDatePicker
+                      date={date}
+                      onChange={setDate}
+                    />
+                  </div>
+                  {/* Ora */}
+                  <div>
+                    <label className="text-xs font-semibold text-white/50 uppercase tracking-widest mb-2 block">
+                      ⏰ Ora
+                    </label>
+                    <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden glass-card">
+                      <HourPicker hour={hour} onChange={setHour} />
+                    </div>
+                  </div>
                 </div>
               </div>
               <motion.button
