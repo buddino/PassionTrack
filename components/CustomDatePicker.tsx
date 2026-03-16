@@ -69,7 +69,7 @@ export default function CustomDatePicker({ date, onChange }: CustomDatePickerPro
     const displayDate = selectedDate.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
 
     return (
-        <div className="relative z-50" ref={containerRef}>
+        <div className="relative z-30" ref={containerRef}>
             <button
                 type="button"
                 onClick={() => setOpen(!open)}
@@ -138,13 +138,18 @@ export default function CustomDatePicker({ date, onChange }: CustomDatePickerPro
                                     new Date().getMonth() === currentMonth.getMonth() &&
                                     new Date().getFullYear() === currentMonth.getFullYear()
 
+                                const isFuture = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day, 23, 59, 59).getTime() > new Date().getTime()
+
                                 return (
                                     <button
                                         key={`day-${day}`}
                                         type="button"
+                                        disabled={isFuture}
                                         onClick={() => handleSelectDate(day)}
                                         className="h-9 relative flex items-center justify-center rounded-lg text-sm font-medium transition-all"
                                         style={{
+                                            opacity: isFuture ? 0.3 : 1,
+                                            cursor: isFuture ? 'not-allowed' : 'pointer',
                                             color: isSelected ? 'white' : 'rgba(255,255,255,0.7)',
                                             background: isSelected
                                                 ? 'linear-gradient(135deg, #FF0033, #8B00FF)'

@@ -4,6 +4,8 @@ import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { PerformanceEntry } from '@/lib/store'
+import type { PerformanceType } from '@/lib/constants'
+import { PERFORMANCE_TYPES_CONFIG } from '@/lib/constants'
 
 interface MonthlyCalendarProps {
     entries: PerformanceEntry[]
@@ -46,10 +48,18 @@ export default function MonthlyCalendar({ entries, onDateSelect, selectedDate }:
         return days
     }, [year, month])
 
-    const entryDates = useMemo(() => {
-        const set = new Set<string>()
-        entries.forEach(e => set.add(e.datetime.slice(0, 10)))
-        return set
+    const dateTypes = useMemo(() => {
+        const map = new Map<string, PerformanceType[]>()
+        entries.forEach(e => {
+            const d = e.datetime.slice(0, 10)
+            const list = map.get(d) || []
+            const t = e.type || 'scopata'
+            if (!list.includes(t)) {
+                list.push(t)
+            }
+            map.set(d, list)
+        })
+        return map
     }, [entries])
 
     const changeMonth = (offset: number) => {
@@ -93,37 +103,47 @@ export default function MonthlyCalendar({ entries, onDateSelect, selectedDate }:
                     if (!date) return <div key={`empty-${i}`} className="aspect-square" />
 
                     const dateStr = date.toISOString().slice(0, 10)
-                    const hasEntry = entryDates.has(dateStr)
+                    const types = dateTypes.get(dateStr) || []
+                    const hasEntry = types.length > 0
                     const isSelected = selectedDate === dateStr
                     const isToday = dateStr === todayStr
+
+                    const primaryColor = hasEntry ? PERFORMANCE_TYPES_CONFIG[types[0]].color : '#FF0033'
+                    const bgStyle = isSelected
+                        ? `${primaryColor}33`
+                        : hasEntry
+                            ? `${primaryColor}1A`
+                            : 'rgba(255, 255, 255, 0.03)'
+                    const borderStyle = isSelected
+                        ? `1px solid ${primaryColor}`
+                        : isToday
+                            ? '1px solid rgba(255, 255, 255, 0.2)'
+                            : '1px solid transparent'
 
                     return (
                         <button
                             key={dateStr}
                             onClick={() => onDateSelect(isSelected ? null : dateStr)}
-                            className="relative aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition-all group"
+                            className="relative aspect-square rounded-lg flex flex-col items-center justify-center text-sm font-medium transition-all group"
                             style={{
-                                background: isSelected
-                                    ? 'rgba(255, 0, 51, 0.2)'
-                                    : hasEntry
-                                        ? 'rgba(255, 0, 51, 0.1)'
-                                        : 'rgba(255, 255, 255, 0.03)',
-                                border: isSelected
-                                    ? '1px solid #FF0033'
-                                    : isToday
-                                        ? '1px solid rgba(255, 255, 255, 0.2)'
-                                        : '1px solid transparent',
+                                background: bgStyle,
+                                border: borderStyle,
                                 color: isSelected || hasEntry ? 'white' : 'rgba(255, 255, 255, 0.4)'
                             }}
                         >
-                            {date.getDate()}
+                            <span>{date.getDate()}</span>
                             {hasEntry && !isSelected && (
-                                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#FF0033]" />
+                                <div className="flex gap-0.5 mt-0.5 absolute bottom-1 left-1/2 -translate-x-1/2">
+                                    {types.map(t => (
+                                        <div key={t} className="w-1 rounded-full aspect-square" style={{ background: PERFORMANCE_TYPES_CONFIG[t].color }} />
+                                    ))}
+                                </div>
                             )}
                             {hasEntry && isSelected && (
                                 <motion.div
                                     layoutId="active-bg"
-                                    className="absolute inset-0 rounded-lg bg-[#FF0033]/20 -z-10"
+                                    className="absolute inset-0 rounded-lg -z-10"
+                                    style={{ background: `${primaryColor}40` }}
                                 />
                             )}
                         </button>

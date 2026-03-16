@@ -1,12 +1,14 @@
-import { DEFAULT_WEIGHTS } from './constants'
+import { DEFAULT_WEIGHTS, PerformanceType, Gender } from './constants'
 
 export interface PerformanceEntry {
     id: string
+    type?: PerformanceType // Optional for legacy support
+    location?: string
     partnerNick: string
-    partnerGender: 'M' | 'F' | 'O'
+    partnerGender: Gender
     datetime: string
     mood: number
-    scores: number[]
+    scores: number[] // Indexed matching PERFORMANCE_TYPES_CONFIG[type].statements
     weightedAvg: number
 }
 
@@ -21,7 +23,12 @@ export function getEntries(): PerformanceEntry[] {
     if (typeof window === 'undefined') return []
     try {
         const raw = localStorage.getItem(ENTRIES_KEY)
-        return raw ? JSON.parse(raw) : []
+        const entries = raw ? JSON.parse(raw) : []
+        // Optional backfill of legacy entries as 'scopata'
+        return entries.map((e: any) => ({
+            ...e,
+            type: e.type || 'scopata'
+        }))
     } catch {
         return []
     }
@@ -69,13 +76,31 @@ export function exportJSON(): void {
     URL.revokeObjectURL(url)
 }
 
-export function getPartnerHistory(): Array<{ nick: string; gender: 'M' | 'F' | 'O' }> {
+export function getPartnerHistory(type?: PerformanceType): Array<{ nick: string; gender: Gender }> {
     const entries = getEntries()
-    const map = new Map<string, 'M' | 'F' | 'O'>()
+    const map = new Map<string, Gender>()
     for (const e of entries) {
-        if (!map.has(e.partnerNick)) {
-            map.set(e.partnerNick, e.partnerGender)
+        if (type === 'fai-da-te') {
+            if (e.type === 'fai-da-te' && !map.has(e.partnerNick)) {
+                map.set(e.partnerNick, e.partnerGender)
+            }
+        } else {
+            // Include legacy undefined forms, or 'scopata' / 'limone' as human partners
+            if (e.type !== 'fai-da-te' && !map.has(e.partnerNick)) {
+                map.set(e.partnerNick, e.partnerGender)
+            }
         }
     }
     return Array.from(map.entries()).map(([nick, gender]) => ({ nick, gender }))
+}
+
+export function getLocationHistory(): string[] {
+    const entries = getEntries()
+    const set = new Set<string>()
+    for (const e of entries) {
+        if (e.location?.trim()) {
+            set.add(e.location.trim())
+        }
+    }
+    return Array.from(set)
 }

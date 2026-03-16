@@ -1,4 +1,5 @@
 export type Gender = 'M' | 'F' | 'O'
+export type PerformanceType = 'scopata' | 'limone' | 'fai-da-te'
 
 export interface Statement {
     id: number
@@ -70,7 +71,59 @@ export const STATEMENTS: Statement[] = [
         emoji: '🎲',
         description: 'Creatività, posizioni e ritmo',
     },
+    {
+        id: 11,
+        label: 'Manine qua e là',
+        emoji: '🖐️',
+        description: 'Uso delle mani e carezze',
+    },
+    {
+        id: 12,
+        label: 'Lingua',
+        emoji: '🌀',
+        description: 'Abilità e tecnica',
+    },
+    {
+        id: 13,
+        label: 'Livello di eccitazione raggiunto',
+        emoji: '🔥',
+        description: 'Picco di calore',
+    },
+    {
+        id: 14,
+        label: 'Dolore alla mascella',
+        emoji: '💊',
+        description: 'Impegno logistico e fisico',
+    },
+    {
+        id: 15,
+        label: 'Qualità del tool utilizzato',
+        emoji: '🛠️',
+        description: 'Efficacia dell\'attrezzo',
+    },
 ]
 
+export const PERFORMANCE_TYPES_CONFIG = {
+    'scopata': {
+        label: 'Scopata',
+        emoji: '🧹',
+        statements: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        color: '#FF0033' // Neon red
+    },
+    'limone': {
+        label: 'Limone duro',
+        emoji: '🍋',
+        statements: [2, 9, 10, 11, 12, 13, 14, 4],
+        color: '#FFCC00' // Lemon yellow
+    },
+    'fai-da-te': {
+        label: 'Fai da te',
+        emoji: '🖐️',
+        statements: [4, 6, 5, 8, 15],
+        color: '#33CCFF' // Cyan
+    }
+} as const
+
+// Map statement 1..15 -> 1.0 weight by default.
 export const DEFAULT_WEIGHTS = STATEMENTS.map(() => 1.0)
 export const MOOD_EMOJIS = ['😶', '😏', '😊', '🥵', '🔥', '💥']

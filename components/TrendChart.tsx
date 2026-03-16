@@ -12,7 +12,7 @@ import {
     Legend,
 } from 'recharts'
 import type { PerformanceEntry } from '@/lib/store'
-import { STATEMENTS } from '@/lib/constants'
+import { STATEMENTS, PERFORMANCE_TYPES_CONFIG } from '@/lib/constants'
 
 type Filter = '1M' | '3M' | '6M' | '1Y' | 'All'
 const FILTERS: Filter[] = ['1M', '3M', '6M', '1Y', 'All']
@@ -20,6 +20,7 @@ const FILTERS: Filter[] = ['1M', '3M', '6M', '1Y', 'All']
 const STATEMENT_COLORS = [
     '#FF0033', '#FF6633', '#FF9900', '#FFCC00', '#99FF33',
     '#33FFCC', '#33CCFF', '#3366FF', '#9933FF', '#FF33CC',
+    '#FFFFFF', '#AAAAAA', '#FF00FF', '#00FFFF', '#FF9999'
 ]
 
 interface TrendChartProps {
@@ -49,6 +50,21 @@ export default function TrendChart({ entries, partnerFilter }: TrendChartProps) 
         })
     }
 
+    const activeType = useMemo(() => {
+        if (entries.length === 0) return null
+        const t = entries[0].type || 'scopata'
+        for (const e of entries) {
+            if ((e.type || 'scopata') !== t) return null
+        }
+        return t
+    }, [entries])
+
+    const activeStatements = useMemo(() => {
+        if (!activeType) return []
+        const ids = PERFORMANCE_TYPES_CONFIG[activeType].statements
+        return ids.map(id => STATEMENTS.find(s => s.id === id)!)
+    }, [activeType])
+
     const data = useMemo(() => {
         let filtered = getFilteredEntries(entries, filter)
         if (partnerFilter) filtered = filtered.filter((e) => e.partnerNick === partnerFilter)
@@ -60,32 +76,36 @@ export default function TrendChart({ entries, partnerFilter }: TrendChartProps) 
                     Media: e.weightedAvg,
                     Mood: e.mood * 2,
                 }
-                if (showStatements) {
-                    STATEMENTS.forEach((s) => {
-                        row[`S${s.id}`] = e.scores[s.id - 1]
+                if (showStatements && activeType && e.scores) {
+                    activeStatements.forEach((s, idx) => {
+                        row[`S${s.id}`] = e.scores[idx] ?? 0
                     })
                 }
                 return row
             })
-    }, [entries, filter, partnerFilter, showStatements])
+    }, [entries, filter, partnerFilter, showStatements, activeType, activeStatements])
+
+    const primaryColor = activeType ? PERFORMANCE_TYPES_CONFIG[activeType].color : '#FF0033'
 
     return (
         <div className="glass-card p-4">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                 <h3 className="text-sm font-bold text-white/60 uppercase tracking-widest">📈 Trend</h3>
                 <div className="flex items-center gap-2">
-                    <button
-                        type="button"
-                        onClick={() => setShowStatements((v) => !v)}
-                        className="text-xs px-3 py-1.5 rounded-lg transition-all"
-                        style={{
-                            background: showStatements ? 'rgba(255,0,51,0.2)' : 'rgba(255,255,255,0.05)',
-                            border: `1px solid ${showStatements ? 'rgba(255,0,51,0.4)' : 'rgba(255,255,255,0.1)'}`,
-                            color: showStatements ? '#FF0033' : 'rgba(255,255,255,0.5)',
-                        }}
-                    >
-                        {showStatements ? '📊 Dettaglio' : '📊 Dettaglio'}
-                    </button>
+                    {activeType && (
+                        <button
+                            type="button"
+                            onClick={() => setShowStatements((v) => !v)}
+                            className="text-xs px-3 py-1.5 rounded-lg transition-all"
+                            style={{
+                                background: showStatements ? `${primaryColor}33` : 'rgba(255,255,255,0.05)',
+                                border: `1px solid ${showStatements ? `${primaryColor}66` : 'rgba(255,255,255,0.1)'}`,
+                                color: showStatements ? primaryColor : 'rgba(255,255,255,0.5)',
+                            }}
+                        >
+                            {showStatements ? '📊 Dettaglio' : '📊 Dettaglio'}
+                        </button>
+                    )}
                     <div className="flex gap-1">
                         {FILTERS.map((f) => (
                             <button
@@ -94,9 +114,9 @@ export default function TrendChart({ entries, partnerFilter }: TrendChartProps) 
                                 onClick={() => setFilter(f)}
                                 className="text-xs px-2.5 py-1.5 rounded-lg transition-all"
                                 style={{
-                                    background: filter === f ? 'rgba(255,0,51,0.2)' : 'rgba(255,255,255,0.05)',
-                                    border: `1px solid ${filter === f ? 'rgba(255,0,51,0.4)' : 'rgba(255,255,255,0.08)'}`,
-                                    color: filter === f ? '#FF0033' : 'rgba(255,255,255,0.4)',
+                                    background: filter === f ? `${primaryColor}33` : 'rgba(255,255,255,0.05)',
+                                    border: `1px solid ${filter === f ? `${primaryColor}66` : 'rgba(255,255,255,0.08)'}`,
+                                    color: filter === f ? primaryColor : 'rgba(255,255,255,0.4)',
                                     fontWeight: filter === f ? 600 : 400,
                                 }}
                             >
@@ -112,7 +132,7 @@ export default function TrendChart({ entries, partnerFilter }: TrendChartProps) 
                     Aggiungi almeno 2 sessioni per visualizzare il trend 📉
                 </div>
             ) : (
-                <ResponsiveContainer width="100%" height={showStatements ? 400 : 250}>
+                <ResponsiveContainer width="100%" height={showStatements && activeType ? 400 : 250}>
                     <LineChart data={data} margin={{ top: 5, right: 10, bottom: 5, left: -20 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                         <XAxis
@@ -131,7 +151,7 @@ export default function TrendChart({ entries, partnerFilter }: TrendChartProps) 
                         <Tooltip
                             contentStyle={{
                                 background: 'rgba(15,15,25,0.95)',
-                                border: '1px solid rgba(255,0,51,0.3)',
+                                border: `1px solid ${primaryColor}40`,
                                 borderRadius: 12,
                                 color: 'white',
                                 fontSize: 12,
@@ -139,7 +159,7 @@ export default function TrendChart({ entries, partnerFilter }: TrendChartProps) 
                             labelStyle={{ color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}
                         />
                         <Legend
-                            layout={showStatements ? 'vertical' : 'horizontal'}
+                            layout={showStatements && activeType ? 'vertical' : 'horizontal'}
                             verticalAlign="bottom"
                             align="center"
                             wrapperStyle={{
@@ -156,11 +176,11 @@ export default function TrendChart({ entries, partnerFilter }: TrendChartProps) 
                         <Line
                             type="monotone"
                             dataKey="Media"
-                            stroke="#FF0033"
+                            stroke={primaryColor}
                             strokeWidth={2.5}
                             hide={hiddenLines.has('Media')}
-                            dot={{ fill: '#FF0033', r: 3, strokeWidth: 0 }}
-                            activeDot={{ r: 5, fill: '#FF0033' }}
+                            dot={{ fill: primaryColor, r: 3, strokeWidth: 0 }}
+                            activeDot={{ r: 5, fill: primaryColor }}
                             name="Media Performance"
                         />
                         <Line
@@ -174,13 +194,13 @@ export default function TrendChart({ entries, partnerFilter }: TrendChartProps) 
                             activeDot={{ r: 4, fill: '#8B00FF' }}
                             name="Mood / Eccitazione"
                         />
-                        {showStatements &&
-                            STATEMENTS.map((s, i) => (
+                        {showStatements && activeType &&
+                            activeStatements.map((s, i) => (
                                 <Line
                                     key={s.id}
                                     type="monotone"
                                     dataKey={`S${s.id}`}
-                                    stroke={STATEMENT_COLORS[i]}
+                                    stroke={STATEMENT_COLORS[i % STATEMENT_COLORS.length]}
                                     strokeWidth={1.5}
                                     hide={hiddenLines.has(`S${s.id}`)}
                                     dot={false}

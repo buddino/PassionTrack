@@ -3,24 +3,43 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getPartnerHistory } from '@/lib/store'
-import type { Gender } from '@/lib/constants'
+import type { Gender, PerformanceType } from '@/lib/constants'
 
 interface PartnerDropdownProps {
+    type: PerformanceType
     nick: string
     gender: Gender
     onNickChange: (nick: string) => void
     onGenderChange: (g: Gender) => void
 }
 
-export default function PartnerDropdown({ nick, gender, onNickChange, onGenderChange }: PartnerDropdownProps) {
+export default function PartnerDropdown({ type, nick, gender, onNickChange, onGenderChange }: PartnerDropdownProps) {
     const [open, setOpen] = useState(false)
     const [history, setHistory] = useState<Array<{ nick: string; gender: Gender }>>([])
     const inputRef = useRef<HTMLInputElement>(null)
     const containerRef = useRef<HTMLDivElement>(null)
 
+    const hasPrefilledRef = useRef(false)
+
     useEffect(() => {
-        setHistory(getPartnerHistory())
-    }, [])
+        setHistory(getPartnerHistory(type))
+        if (type === 'fai-da-te' && !hasPrefilledRef.current) {
+            if (!nick) {
+                onNickChange('Federica')
+                onGenderChange('F')
+            }
+            hasPrefilledRef.current = true
+        } else if (type !== 'fai-da-te') {
+            hasPrefilledRef.current = false
+        }
+    }, [type, nick, onNickChange, onGenderChange])
+
+    useEffect(() => {
+        const exactMatch = history.find(h => h.nick.toLowerCase() === nick.trim().toLowerCase())
+        if (exactMatch && exactMatch.gender !== gender) {
+            onGenderChange(exactMatch.gender)
+        }
+    }, [nick, history, gender, onGenderChange])
 
     useEffect(() => {
         const handleClick = (e: MouseEvent) => {
@@ -40,11 +59,14 @@ export default function PartnerDropdown({ nick, gender, onNickChange, onGenderCh
         { value: 'O', label: 'Altro', emoji: '⚧️' },
     ]
 
+    const isToy = type === 'fai-da-te'
+    const exactMatch = history.find(h => h.nick.toLowerCase() === nick.trim().toLowerCase())
+
     return (
-        <div className="space-y-3 relative z-30">
+        <div className="space-y-3 relative z-50">
             <div ref={containerRef} className="relative">
                 <label className="text-xs font-semibold text-white/50 uppercase tracking-widest mb-2 block">
-                    👤 Nickname Partner
+                    {isToy ? '🖐️ Nome tool / toy' : '👤 Nickname Partner'}
                 </label>
                 <div className="relative">
                     <input
@@ -72,11 +94,16 @@ export default function PartnerDropdown({ nick, gender, onNickChange, onGenderCh
                             e.target.style.boxShadow = 'none'
                         }}
                     />
+                    {isToy && nick.trim().toLowerCase() === 'federica' && (
+                        <div className="absolute right-9 top-1/2 -translate-y-1/2 text-lg pointer-events-none opacity-80" aria-hidden="true">
+                            🖐️
+                        </div>
+                    )}
                     {nick && (
                         <button
                             type="button"
                             onClick={() => { onNickChange(''); inputRef.current?.focus() }}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 text-lg"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 text-lg flex items-center justify-center p-1"
                         >
                             ×
                         </button>
@@ -117,29 +144,31 @@ export default function PartnerDropdown({ nick, gender, onNickChange, onGenderCh
                 </AnimatePresence>
             </div>
 
-            <div>
-                <label className="text-xs font-semibold text-white/50 uppercase tracking-widest mb-2 block">
-                    ⚧ Genere
-                </label>
-                <div className="flex gap-2">
-                    {genderOptions.map(({ value, label, emoji }) => (
-                        <button
-                            key={value}
-                            type="button"
-                            onClick={() => onGenderChange(value)}
-                            className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-1.5"
-                            style={{
-                                background: gender === value ? 'linear-gradient(135deg, #FF0033, #8B00FF)' : 'rgba(255,255,255,0.05)',
-                                border: gender === value ? '1px solid rgba(255,0,51,0.5)' : '1px solid rgba(255,255,255,0.08)',
-                                color: gender === value ? 'white' : 'rgba(255,255,255,0.5)',
-                                boxShadow: gender === value ? '0 4px 15px rgba(255,0,51,0.3)' : 'none',
-                            }}
-                        >
-                            {emoji} {label}
-                        </button>
-                    ))}
+            {!isToy && (
+                <div className={exactMatch ? "opacity-50 pointer-events-none" : ""}>
+                    <label className="text-xs font-semibold text-white/50 uppercase tracking-widest mb-2 block">
+                        ⚧ Genere {exactMatch && "(Bloccato dalla history)"}
+                    </label>
+                    <div className="flex gap-2">
+                        {genderOptions.map(({ value, label, emoji }) => (
+                            <button
+                                key={value}
+                                type="button"
+                                onClick={() => onGenderChange(value)}
+                                className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-1.5"
+                                style={{
+                                    background: gender === value ? 'linear-gradient(135deg, #FF0033, #8B00FF)' : 'rgba(255,255,255,0.05)',
+                                    border: gender === value ? '1px solid rgba(255,0,51,0.5)' : '1px solid rgba(255,255,255,0.08)',
+                                    color: gender === value ? 'white' : 'rgba(255,255,255,0.5)',
+                                    boxShadow: gender === value ? '0 4px 15px rgba(255,0,51,0.3)' : 'none',
+                                }}
+                            >
+                                {emoji} {label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     )
 }
