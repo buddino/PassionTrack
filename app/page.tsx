@@ -10,9 +10,10 @@ import CustomDatePicker from '@/components/CustomDatePicker'
 import HourPicker from '@/components/HourPicker'
 import PerformanceTypePicker from '@/components/PerformanceTypePicker'
 import LocationDropdown from '@/components/LocationDropdown'
-import { saveEntry, getSettings } from '@/lib/store'
+import { saveEntry, getSettings, getEntries, getUnlockedChallenges, addUnlockedChallenge } from '@/lib/store'
+import { CHALLENGES, type Challenge } from '@/lib/challenges'
 import { weightedAverage } from '@/lib/scoring'
-import { STATEMENTS, PERFORMANCE_TYPES_CONFIG } from '@/lib/constants'
+import { STATEMENTS, PERFORMANCE_TYPES_CONFIG, DEFAULT_WEIGHTS } from '@/lib/constants'
 import type { Gender, PerformanceType } from '@/lib/constants'
 
 const Confetti = dynamic(() => import('react-confetti'), { ssr: false })
@@ -45,7 +46,8 @@ export default function HomePage() {
   const [mood, setMood] = useState(3)
   const [scores, setScores] = useState<number[]>([])
 
-  const [weights, setWeights] = useState<number[]>([])
+  const [weights, setWeights] = useState<number[]>(DEFAULT_WEIGHTS)
+  const [newlyUnlocked, setNewlyUnlocked] = useState<Challenge[]>([])
   const [showConfetti, setShowConfetti] = useState(false)
   const [savedScore, setSavedScore] = useState<number | null>(null)
   const { width, height } = useWindowSize()
@@ -84,13 +86,7 @@ export default function HomePage() {
     if (!perfType) { setStep('type'); return }
     if (!partnerNick.trim()) { setStep('details'); return }
 
-    const uuid = () => 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0
-      return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
-    })
-
     const entry = {
-      id: uuid(),
       type: perfType,
       location: location.trim() || undefined,
       partnerNick: partnerNick.trim(),
@@ -101,10 +97,26 @@ export default function HomePage() {
       weightedAvg: avg,
     }
     saveEntry(entry)
+
+    const allEntries = getEntries()
+    const unlockedIds = getUnlockedChallenges()
+    const newlyUnlockedList: Challenge[] = []
+
+    for (const challenge of CHALLENGES) {
+      if (!unlockedIds.includes(challenge.id)) {
+        if (challenge.condition(allEntries)) {
+          newlyUnlockedList.push(challenge)
+          addUnlockedChallenge(challenge.id)
+        }
+      }
+    }
+
+    setNewlyUnlocked(newlyUnlockedList)
+
     setSavedScore(avg)
     setShowConfetti(true)
     setStep('done')
-    setTimeout(() => setShowConfetti(false), 4500)
+    setTimeout(() => setShowConfetti(false), newlyUnlockedList.length > 0 ? 8000 : 4500)
   }
 
   const handleReset = () => {
@@ -118,6 +130,7 @@ export default function HomePage() {
     setMood(3)
     setScores([])
     setSavedScore(null)
+    setNewlyUnlocked([])
     setShowConfetti(false)
   }
 
@@ -359,14 +372,34 @@ export default function HomePage() {
               {location && (
                 <p className="text-white/40 text-sm mb-6">📍 {location}</p>
               )}
-
-              <div className="glass-card p-6 mb-8 inline-block mx-auto">
-                <p className="text-white/50 text-sm mb-1">Voto finale</p>
-                <p className="text-5xl font-black" style={{ color: PERFORMANCE_TYPES_CONFIG[perfType].color }}>
-                  {savedScore?.toFixed(1)}
-                </p>
-                <p className="text-white/30 text-sm">/10</p>
+              <div className="w-24 h-24 rounded-full border-[6px] flex items-center justify-center mb-8 mx-auto" style={{ borderColor: perfType ? PERFORMANCE_TYPES_CONFIG[perfType].color : '#FF0033' }}>
+                <span className="text-3xl font-black" style={{ color: perfType ? PERFORMANCE_TYPES_CONFIG[perfType].color : '#FF0033' }}>{savedScore}</span>
               </div>
+
+              {newlyUnlocked.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="mb-8 w-full flex flex-col items-center gap-3"
+                >
+                  <h3 className="text-lg font-black text-[#FFCC00] flex items-center gap-2">
+                    <span className="text-2xl">🏆</span> NUOVI REWARD! <span className="text-2xl">🏆</span>
+                  </h3>
+                  <div className="flex flex-col gap-2 w-full">
+                    {newlyUnlocked.map(c => (
+                      <div key={c.id} className="p-4 flex items-center gap-4 rounded-xl border-2 border-[#FFCC00]/40 bg-[#FFD700]/10" style={{ boxShadow: '0 0 20px rgba(255,204,0,0.2)' }}>
+                        <div className="text-4xl">🏅</div>
+                        <div className="text-left flex-1">
+                          <h4 className="font-bold text-white text-[15px]">{c.title}</h4>
+                          <p className="text-[11px] text-white/70 leading-tight mt-0.5">{c.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+
               <div className="flex flex-col gap-3 px-4">
                 <motion.button
                   type="button"

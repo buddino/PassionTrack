@@ -16,51 +16,124 @@ export interface Settings {
     weights: number[]
 }
 
-const ENTRIES_KEY = 'passiontrack_entries'
-const SETTINGS_KEY = 'passiontrack_settings'
+export interface AppState {
+    theme: 'dark' | 'light'
+    notifications: boolean
+    pin: string | null
+    entries: PerformanceEntry[]
+    unlockedChallenges: string[]
+    settings: Settings // Moved settings into AppState
+}
 
-export function getEntries(): PerformanceEntry[] {
-    if (typeof window === 'undefined') return []
+const defaultState: AppState = {
+    theme: 'dark',
+    notifications: true,
+    pin: null,
+    entries: [],
+    unlockedChallenges: [],
+    settings: { weights: DEFAULT_WEIGHTS }
+}
+
+const APP_STATE_KEY = 'passiontrack_app_state'
+
+function getState(): AppState {
+    if (typeof window === 'undefined') return defaultState
     try {
-        const raw = localStorage.getItem(ENTRIES_KEY)
-        const entries = raw ? JSON.parse(raw) : []
-        // Optional backfill of legacy entries as 'scopata'
-        return entries.map((e: any) => ({
-            ...e,
-            type: e.type || 'scopata'
-        }))
-    } catch {
-        return []
+        const raw = localStorage.getItem(APP_STATE_KEY)
+        const storedState: AppState = raw ? JSON.parse(raw) : defaultState
+
+        // Merge with defaultState to ensure new fields are present
+        const mergedState = { ...defaultState, ...storedState }
+
+        // Optional backfill of legacy entries as 'scopata' if not already done
+        if (mergedState.entries && mergedState.entries.some(e => e.type === undefined)) {
+            mergedState.entries = mergedState.entries.map((e: any) => ({
+                ...e,
+                type: e.type || 'scopata'
+            }))
+        }
+
+        // Ensure unlockedChallenges is an array
+        if (!mergedState.unlockedChallenges) {
+            mergedState.unlockedChallenges = []
+        }
+
+        // Ensure settings are present
+        if (!mergedState.settings) {
+            mergedState.settings = { weights: DEFAULT_WEIGHTS }
+        } else if (!mergedState.settings.weights) {
+            mergedState.settings.weights = DEFAULT_WEIGHTS
+        }
+
+        return mergedState
+    } catch (e) {
+        console.error("Failed to parse app state from localStorage:", e)
+        return defaultState
     }
 }
 
-export function saveEntry(entry: PerformanceEntry): void {
-    const entries = getEntries()
-    entries.unshift(entry)
-    localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries))
+function saveState(state: AppState): void {
+    if (typeof window === 'undefined') return
+    localStorage.setItem(APP_STATE_KEY, JSON.stringify(state))
+}
+
+export function getEntries(): PerformanceEntry[] {
+    return getState().entries
+}
+
+export const saveEntry = (entry: Omit<PerformanceEntry, 'id'>): PerformanceEntry => {
+    const state = getState()
+    // Find missing fields and ensure default arrays are correct length based on type
+    const newEntry: PerformanceEntry = {
+        ...entry,
+        id: crypto.randomUUID(),
+    }
+    state.entries.unshift(newEntry) // Add to the beginning
+
+    // Evaluate challenges here
+    // import inside to prevent circular dep initially or just use it if exported
+    // actually, we will just return the state context and handle evaluation in the UI, or evaluate here dynamically.
+    saveState(state)
+    return newEntry
 }
 
 export function deleteEntry(id: string): void {
-    const entries = getEntries().filter((e) => e.id !== id)
-    localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries))
+    const state = getState()
+    state.entries = state.entries.filter((e) => e.id !== id)
+    saveState(state)
 }
 
 export function clearAllEntries(): void {
-    localStorage.removeItem(ENTRIES_KEY)
+    const state = getState()
+    state.entries = []
+    saveState(state)
 }
 
 export function getSettings(): Settings {
-    if (typeof window === 'undefined') return { weights: DEFAULT_WEIGHTS }
-    try {
-        const raw = localStorage.getItem(SETTINGS_KEY)
-        return raw ? JSON.parse(raw) : { weights: DEFAULT_WEIGHTS }
-    } catch {
-        return { weights: DEFAULT_WEIGHTS }
-    }
+    return getState().settings
 }
 
 export function saveSettings(settings: Settings): void {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+    const state = getState()
+    state.settings = settings
+    saveState(state)
+}
+
+export const getUnlockedChallenges = (): string[] => {
+    return getState().unlockedChallenges || []
+}
+
+export const addUnlockedChallenge = (id: string) => {
+    const state = getState()
+    if (!state.unlockedChallenges) {
+        state.unlockedChallenges = []
+    }
+    if (!state.unlockedChallenges.includes(id)) {
+        state.unlockedChallenges.push(id)
+        saveState(state)
+        return true
+    }
+    return false
 }
 
 export function exportJSON(): void {

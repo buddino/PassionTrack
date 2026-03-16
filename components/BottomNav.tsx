@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 const tabs = [
     { href: '/', label: 'Nuovo', emoji: '➕' },
     { href: '/stats', label: 'Stats', emoji: '📊' },
+    { href: '/rewards', label: 'Rewards', emoji: '🏆' },
     { href: '/settings', label: 'Impostazioni', emoji: '⚙️' },
 ]
 
