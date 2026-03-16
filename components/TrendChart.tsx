@@ -38,6 +38,16 @@ function getFilteredEntries(entries: PerformanceEntry[], filter: Filter): Perfor
 export default function TrendChart({ entries, partnerFilter }: TrendChartProps) {
     const [filter, setFilter] = useState<Filter>('3M')
     const [showStatements, setShowStatements] = useState(false)
+    const [hiddenLines, setHiddenLines] = useState<Set<string>>(new Set())
+
+    const toggleLine = (dataKey: string) => {
+        setHiddenLines((prev) => {
+            const next = new Set(prev)
+            if (next.has(dataKey)) next.delete(dataKey)
+            else next.add(dataKey)
+            return next
+        })
+    }
 
     const data = useMemo(() => {
         let filtered = getFilteredEntries(entries, filter)
@@ -48,10 +58,11 @@ export default function TrendChart({ entries, partnerFilter }: TrendChartProps) 
                 const row: Record<string, string | number> = {
                     date: new Date(e.datetime).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' }),
                     Media: e.weightedAvg,
+                    Mood: e.mood * 2,
                 }
                 if (showStatements) {
-                    e.scores.forEach((s, i) => {
-                        row[`S${i + 1}`] = s
+                    STATEMENTS.forEach((s) => {
+                        row[`S${s.id}`] = e.scores[s.id - 1]
                     })
                 }
                 return row
@@ -101,7 +112,7 @@ export default function TrendChart({ entries, partnerFilter }: TrendChartProps) 
                     Aggiungi almeno 2 sessioni per visualizzare il trend 📉
                 </div>
             ) : (
-                <ResponsiveContainer width="100%" height={220}>
+                <ResponsiveContainer width="100%" height={showStatements ? 400 : 250}>
                     <LineChart data={data} margin={{ top: 5, right: 10, bottom: 5, left: -20 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                         <XAxis
@@ -127,14 +138,41 @@ export default function TrendChart({ entries, partnerFilter }: TrendChartProps) 
                             }}
                             labelStyle={{ color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}
                         />
-                        {showStatements && <Legend wrapperStyle={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }} />}
+                        <Legend
+                            layout={showStatements ? 'vertical' : 'horizontal'}
+                            verticalAlign="bottom"
+                            align="center"
+                            wrapperStyle={{
+                                fontSize: 10,
+                                color: 'rgba(255,255,255,0.5)',
+                                paddingTop: 20,
+                            }}
+                            onClick={(e) => {
+                                if (typeof e.dataKey === 'string') {
+                                    toggleLine(e.dataKey)
+                                }
+                            }}
+                        />
                         <Line
                             type="monotone"
                             dataKey="Media"
                             stroke="#FF0033"
                             strokeWidth={2.5}
+                            hide={hiddenLines.has('Media')}
                             dot={{ fill: '#FF0033', r: 3, strokeWidth: 0 }}
                             activeDot={{ r: 5, fill: '#FF0033' }}
+                            name="Media Performance"
+                        />
+                        <Line
+                            type="monotone"
+                            dataKey="Mood"
+                            stroke="#8B00FF"
+                            strokeWidth={2}
+                            hide={hiddenLines.has('Mood')}
+                            strokeDasharray="5 5"
+                            dot={{ fill: '#8B00FF', r: 2, strokeWidth: 0 }}
+                            activeDot={{ r: 4, fill: '#8B00FF' }}
+                            name="Mood / Eccitazione"
                         />
                         {showStatements &&
                             STATEMENTS.map((s, i) => (
@@ -143,7 +181,8 @@ export default function TrendChart({ entries, partnerFilter }: TrendChartProps) 
                                     type="monotone"
                                     dataKey={`S${s.id}`}
                                     stroke={STATEMENT_COLORS[i]}
-                                    strokeWidth={1}
+                                    strokeWidth={1.5}
+                                    hide={hiddenLines.has(`S${s.id}`)}
                                     dot={false}
                                     strokeDasharray="4 2"
                                     name={s.label}
