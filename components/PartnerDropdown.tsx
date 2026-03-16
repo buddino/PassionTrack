@@ -41,7 +41,7 @@ export default function PartnerDropdown({ nick, gender, onNickChange, onGenderCh
     ]
 
     return (
-        <div className="space-y-3">
+        <div className="space-y-3 relative z-30">
             <div ref={containerRef} className="relative">
                 <label className="text-xs font-semibold text-white/50 uppercase tracking-widest mb-2 block">
                     👤 Nickname Partner

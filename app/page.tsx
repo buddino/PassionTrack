@@ -149,7 +149,7 @@ export default function HomePage() {
               exit={{ opacity: 0, y: -24 }}
               transition={{ duration: 0.35 }}
             >
-              <div className="glass-card p-5 mb-4 relative z-10">
+              <div className="glass-card p-5 mb-4 relative">
                 <h2 className="text-lg font-bold text-white mb-4">👤 Con chi?</h2>
                 <PartnerDropdown
                   nick={partnerNick}
