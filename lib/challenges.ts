@@ -316,6 +316,19 @@ export const CHALLENGES: Challenge[] = [
             })
             return Array.from(map.values()).some(set => set.size === 4)
         }
+    },
+    // --- MOOD ---
+    {
+        id: 'mood-5-consec-5',
+        title: 'Horny Five',
+        description: 'Arrapamento massimo per 5 prestazioni consecutive.',
+        condition: (entries) => {
+            if (entries.length < 5) return false
+            // Prendo le ultime 5 in ordine cronologico
+            const sorted = [...entries].sort((a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime())
+            const last5 = sorted.slice(0, 5)
+            return last5.every(e => e.mood === 5)
+        }
     }
 ]
 
