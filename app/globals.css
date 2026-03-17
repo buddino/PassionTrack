@@ -23,6 +23,8 @@
     --neon: #FF0033;
     --violet: #8B00FF;
     --bg: #0a0a0f;
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
 

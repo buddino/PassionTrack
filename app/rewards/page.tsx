@@ -18,10 +18,17 @@ export default function RewardsPage() {
 
     return (
         <div className="px-4 pt-6 space-y-6 pb-24">
-            <div className="mb-2">
-                <h1 className="text-3xl font-black text-[#FFCC00]">🏆 Rewards</h1>
-                <p className="text-white/50 text-sm mt-1">Sblocca nuove sfide durante le tue avventure!</p>
+            <div className="mb-2 flex items-center gap-3">
+                <Image
+                    src="/logo.png"
+                    alt="PassionTrack Logo"
+                    width={32}
+                    height={32}
+                    className="rounded-lg shadow-md"
+                />
+                <h1 className="text-3xl font-black text-[#FFCC00]">Rewards</h1>
             </div>
+            <p className="text-white/50 text-sm mt-1">Sblocca nuove sfide durante le tue avventure!</p>
 
             <div className="glass-card p-4 flex items-center gap-4">
                 <div className="w-16 h-16 rounded-full border-4 border-[#FFCC00]/30 flex items-center justify-center flex-shrink-0 relative overflow-hidden">
@@ -75,16 +82,17 @@ export default function RewardsPage() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setSelected(null)}
-                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+                        className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/90 backdrop-blur-md"
+                        style={{ paddingTop: 'calc(var(--safe-area-top) + 1.5rem)', paddingBottom: 'calc(var(--safe-area-bottom) + 1.5rem)' }}
                     >
                         <motion.div
                             initial={{ scale: 0.9, y: 20 }}
                             animate={{ scale: 1, y: 0 }}
                             exit={{ scale: 0.9, y: 20 }}
                             onClick={e => e.stopPropagation()}
-                            className="bg-[#12121A] border border-white/10 p-6 rounded-3xl w-full max-w-sm text-center relative overflow-hidden"
+                            className="bg-[#0a0a0f]/95 backdrop-blur-2xl border border-white/10 p-8 rounded-[2.5rem] w-full max-w-sm text-center relative overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)]"
                         >
-                            <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-[#FFCC00]/20 to-transparent -z-10" />
+                            <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-[#FFCC00]/15 to-transparent pointer-events-none" />
 
                             <div className={`w-24 h-24 mx-auto rounded-full mb-4 flex items-center justify-center text-5xl shadow-2xl relative ${unlocked.has(selected.id) ? 'bg-gradient-to-br from-[#FFD700] to-[#FF8C00] shadow-[#FFD700]/30' : 'bg-gray-800'}`}>
                                 {unlocked.has(selected.id) ? (

@@ -13,6 +13,10 @@ export const metadata: Metadata = {
   title: 'PassionTrack',
   description: 'Track your intimate performances — private, local, yours.',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'PassionTrack' },
 }
 
@@ -31,7 +35,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Animated background blobs */}
         <div className="animated-bg" />
         {/* Main content */}
-        <main className="relative z-10 max-w-md mx-auto pb-24 min-h-screen">
+        <main
+          className="relative z-10 max-w-md mx-auto pb-24 min-h-screen"
+          style={{ paddingTop: 'var(--safe-area-top)' }}
+        >
           {children}
         </main>
         <BottomNav />

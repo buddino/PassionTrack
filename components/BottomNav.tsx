@@ -22,6 +22,7 @@ export default function BottomNav() {
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
                 borderTop: '1px solid rgba(255,255,255,0.08)',
+                paddingBottom: 'var(--safe-area-bottom)',
             }}
         >
             <div className="flex items-center justify-around max-w-md mx-auto px-2">

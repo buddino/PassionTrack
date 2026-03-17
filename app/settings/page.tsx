@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getSettings, saveSettings, clearAllEntries, exportJSON, importJSON } from '@/lib/store'
-import { STATEMENTS, DEFAULT_WEIGHTS } from '@/lib/constants'
+import { STATEMENTS, DEFAULT_WEIGHTS, PERFORMANCE_TYPES_CONFIG } from '@/lib/constants'
+import Image from 'next/image'
 
 export default function SettingsPage() {
     const [weights, setWeights] = useState(DEFAULT_WEIGHTS)
@@ -70,7 +71,16 @@ export default function SettingsPage() {
 
     return (
         <div className="px-4 pt-6 space-y-5 pb-8">
-            <h1 className="text-3xl font-black" style={{ color: '#FF0033' }}>⚙️ Impostazioni</h1>
+            <div className="flex items-center gap-3">
+                <Image
+                    src="/logo.png"
+                    alt="PassionTrack Logo"
+                    width={32}
+                    height={32}
+                    className="rounded-lg shadow-md"
+                />
+                <h1 className="text-3xl font-black" style={{ color: '#FF0033' }}>Impostazioni</h1>
+            </div>
 
             {/* Weights section */}
             <div className="glass-card p-4">
@@ -88,31 +98,75 @@ export default function SettingsPage() {
                     </button>
                 </div>
 
-                {STATEMENTS.map((s, i) => (
-                    <div key={s.id} className="mb-4">
-                        <div className="flex items-center justify-between mb-1.5">
-                            <div className="flex items-center gap-2">
-                                <span className="text-lg">{s.emoji}</span>
-                                <span className="text-sm font-medium text-white/80">{s.label}</span>
+                {/* Grouped Statements */}
+                {(() => {
+                    const groups: Record<string, typeof STATEMENTS> = {
+                        'Generale': [],
+                    };
+
+                    STATEMENTS.forEach(s => {
+                        const typesIncluding = (Object.values(PERFORMANCE_TYPES_CONFIG) as any[]).filter(config =>
+                            config.statements.includes(s.id)
+                        );
+
+                        if (typesIncluding.length === 1) {
+                            const typeLabel = typesIncluding[0].label;
+                            if (!groups[typeLabel]) groups[typeLabel] = [];
+                            groups[typeLabel].push(s);
+                        } else {
+                            groups['Generale'].push(s);
+                        }
+                    });
+
+                    // Order: General first, then types
+                    const sortedGroupNames = ['Generale', ...Object.values(PERFORMANCE_TYPES_CONFIG).map(c => c.label)];
+
+                    return sortedGroupNames.map(groupName => {
+                        const items = groups[groupName];
+                        if (!items || items.length === 0) return null;
+
+                        return (
+                            <div key={groupName} className="mb-8 last:mb-2">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="h-px flex-1 bg-white/10" />
+                                    <h3 className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">
+                                        {groupName}
+                                    </h3>
+                                    <div className="h-px flex-1 bg-white/10" />
+                                </div>
+
+                                {items.map((s) => {
+                                    const i = s.id - 1;
+                                    return (
+                                        <div key={s.id} className="mb-4 last:mb-0">
+                                            <div className="flex items-center justify-between mb-1.5">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-lg">{s.emoji}</span>
+                                                    <span className="text-sm font-medium text-white/80">{s.label}</span>
+                                                </div>
+                                                <span className="text-sm font-bold text-white/90 min-w-[32px] text-right">
+                                                    {(weights[i] ?? 1.0).toFixed(2)}
+                                                </span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min={0}
+                                                max={3}
+                                                step={0.10}
+                                                value={weights[i] ?? 1.0}
+                                                onChange={(e) => handleWeightChange(i, parseFloat(e.target.value))}
+                                                className="custom-slider w-full"
+                                                style={{
+                                                    background: `linear-gradient(to right, rgba(139,0,255,0.8) 0%, rgba(139,0,255,0.8) ${((weights[i] ?? 1.0) / 3) * 100}%, rgba(255,255,255,0.1) ${((weights[i] ?? 1.0) / 10) * 100}%, rgba(255,255,255,0.1) 100%)`,
+                                                }}
+                                            />
+                                        </div>
+                                    );
+                                })}
                             </div>
-                            <span className="text-sm font-bold text-white/90 min-w-[32px] text-right">
-                                {(weights[i] ?? 1.0).toFixed(2)}
-                            </span>
-                        </div>
-                        <input
-                            type="range"
-                            min={0}
-                            max={3}
-                            step={0.10}
-                            value={weights[i] ?? 1.0}
-                            onChange={(e) => handleWeightChange(i, parseFloat(e.target.value))}
-                            className="custom-slider w-full"
-                            style={{
-                                background: `linear-gradient(to right, rgba(139,0,255,0.8) 0%, rgba(139,0,255,0.8) ${((weights[i] ?? 1.0) / 3) * 100}%, rgba(255,255,255,0.1) ${((weights[i] ?? 1.0) / 10) * 100}%, rgba(255,255,255,0.1) 100%)`,
-                            }}
-                        />
-                    </div>
-                ))}
+                        );
+                    });
+                })()}
 
                 <motion.button
                     type="button"

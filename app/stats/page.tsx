@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getEntries } from '@/lib/store'
 import type { PerformanceEntry } from '@/lib/store'
+import Image from 'next/image'
 import MonthlyCalendar from '@/components/MonthlyCalendar'
 import TimeHistogram from '@/components/TimeHistogram'
 import TrendChart from '@/components/TrendChart'
@@ -126,8 +127,15 @@ export default function StatsPage() {
 
     return (
         <div className="px-4 pt-6 space-y-4">
-            <div className="mb-2">
-                <h1 className="text-3xl font-black" style={{ color: typeColor }}>📊 Statistiche</h1>
+            <div className="mb-2 flex items-center gap-3">
+                <Image
+                    src="/logo.png"
+                    alt="PassionTrack Logo"
+                    width={32}
+                    height={32}
+                    className="rounded-lg shadow-md"
+                />
+                <h1 className="text-3xl font-black" style={{ color: typeColor }}>Statistiche</h1>
             </div>
 
             {/* Monthly Calendar (Shared among all types) */}

@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
+import Image from 'next/image'
 import SliderInput from '@/components/SliderInput'
 import MoodPicker from '@/components/MoodPicker'
 import PartnerDropdown from '@/components/PartnerDropdown'
@@ -158,11 +159,20 @@ export default function HomePage() {
       )}
 
       <div className="px-4 pt-6">
-        {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-black tracking-tight" style={{ color: perfType ? PERFORMANCE_TYPES_CONFIG[perfType].color : '#FF0033' }}>
-            {perfType ? PERFORMANCE_TYPES_CONFIG[perfType].emoji + ' ' + PERFORMANCE_TYPES_CONFIG[perfType].label : '🔥 PassionTrack'}
-          </h1>
+          <div className="flex items-center gap-3">
+            <Image
+              src="/logo.png"
+              alt="PassionTrack Logo"
+              width={40}
+              height={40}
+              className="rounded-xl shadow-lg"
+              priority
+            />
+            <h1 className="text-3xl font-black tracking-tight" style={{ color: perfType ? PERFORMANCE_TYPES_CONFIG[perfType].color : '#FF0033' }}>
+              {perfType ? PERFORMANCE_TYPES_CONFIG[perfType].label : 'PassionTrack'}
+            </h1>
+          </div>
           <p className="text-white/40 text-sm mt-1">Nuovo "allenamento"</p>
         </div>
 
