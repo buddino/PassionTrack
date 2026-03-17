@@ -53,7 +53,7 @@ export default function SettingsPage() {
             <div className="glass-card p-4">
                 <div className="flex items-center justify-between mb-4">
                     <div>
-                        <h2 className="font-bold text-white">⚖️ Pesi degli Statement</h2>
+                        <h2 className="font-bold text-white">⚖️ Pesi dei criteri</h2>
                         <p className="text-xs text-white/40 mt-0.5">Personalizza l&apos;importanza di ogni criterio</p>
                     </div>
                     <button
@@ -80,7 +80,7 @@ export default function SettingsPage() {
                             type="range"
                             min={0}
                             max={3}
-                            step={0.25}
+                            step={0.10}
                             value={weights[i] ?? 1.0}
                             onChange={(e) => handleWeightChange(i, parseFloat(e.target.value))}
                             className="custom-slider w-full"
