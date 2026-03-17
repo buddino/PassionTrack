@@ -99,19 +99,33 @@ export default function StatsPage() {
         const best = es.reduce((a, b) => (a.weightedAvg > b.weightedAvg ? a : b))
         const worst = es.reduce((a, b) => (a.weightedAvg < b.weightedAvg ? a : b))
 
-        // Compute statements if a specific type is selected
-        let stmtAvgs: { id: number; avg: number; label: string; emoji: string }[] = []
-        if (selectedType !== 'All') {
-            const stIds = PERFORMANCE_TYPES_CONFIG[selectedType].statements
-            stmtAvgs = stIds.map((id, index) => {
-                const sAvg = es.reduce((a, e) => a + (e.scores[index] ?? 0), 0) / es.length
-                const stmt = STATEMENTS.find(s => s.id === id)!
-                return { id, avg: sAvg, label: stmt.label, emoji: stmt.emoji }
+        // Compute statement averages
+        const scoreSums = new Map<number, { sum: number; count: number }>()
+
+        es.forEach(e => {
+            const entryType = e.type || 'scopata'
+            const stIds = PERFORMANCE_TYPES_CONFIG[entryType].statements
+            stIds.forEach((id, index) => {
+                const current = scoreSums.get(id) || { sum: 0, count: 0 }
+                scoreSums.set(id, {
+                    sum: current.sum + (e.scores[index] ?? 5),
+                    count: current.count + 1
+                })
             })
-        }
+        })
+
+        const stmtAvgs = Array.from(scoreSums.entries()).map(([id, data]) => {
+            const stmt = STATEMENTS.find(s => s.id === id)!
+            return {
+                id,
+                avg: data.sum / data.count,
+                label: stmt.label,
+                emoji: stmt.emoji
+            }
+        }).sort((a, b) => b.avg - a.avg)
 
         return { avg, best, worst, count: es.length, stmtAvgs }
-    }, [typeEntries, selectedPartner, selectedType])
+    }, [typeEntries, selectedPartner])
 
     if (entries.length === 0) {
         return (
@@ -291,8 +305,8 @@ export default function StatsPage() {
                                     <StatCard label="Record" value={partnerStats?.best.weightedAvg.toFixed(1) ?? '0.0'} emoji="🏆" />
                                     <StatCard label="Min" value={partnerStats?.worst.weightedAvg.toFixed(1) ?? '0.0'} emoji="📉" />
                                 </div>
-                                {/* Per-statement breakdown (Only shown when a specific type is selected) */}
-                                {selectedType !== 'All' && partnerStats.stmtAvgs.length > 0 && (
+                                {/* Per-statement breakdown */}
+                                {partnerStats.stmtAvgs.length > 0 && (
                                     <div className="glass-card p-4">
                                         <h3 className="text-xs text-white/40 uppercase tracking-widest mb-3 font-semibold">Medie per Parametro</h3>
                                         {partnerStats.stmtAvgs.map((s, i) => {
@@ -315,11 +329,6 @@ export default function StatsPage() {
                                                 </div>
                                             )
                                         })}
-                                    </div>
-                                )}
-                                {selectedType === 'All' && (
-                                    <div className="text-center text-[10px] text-white/40 py-2">
-                                        Seleziona un tipo specifico per vedere le medie dei punteggi dettagliati.
                                     </div>
                                 )}
                             </motion.div>
