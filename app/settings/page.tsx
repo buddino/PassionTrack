@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { getSettings, saveSettings, clearAllEntries, exportJSON } from '@/lib/store'
+import { getSettings, saveSettings, clearAllEntries, exportJSON, importJSON } from '@/lib/store'
 import { STATEMENTS, DEFAULT_WEIGHTS } from '@/lib/constants'
 
 export default function SettingsPage() {
@@ -10,6 +10,9 @@ export default function SettingsPage() {
     const [saved, setSaved] = useState(false)
     const [showClearConfirm, setShowClearConfirm] = useState(false)
     const [cleared, setCleared] = useState(false)
+    const [importing, setImporting] = useState(false)
+    const [importError, setImportError] = useState<string | null>(null)
+    const [importSuccess, setImportSuccess] = useState(false)
 
     useEffect(() => {
         const s = getSettings()
@@ -43,6 +46,26 @@ export default function SettingsPage() {
         setShowClearConfirm(false)
         setCleared(true)
         setTimeout(() => setCleared(false), 3000)
+    }
+
+    const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        setImporting(true)
+        setImportError(null)
+        setImportSuccess(false)
+
+        try {
+            await importJSON(file)
+            setImportSuccess(true)
+            setTimeout(() => setImportSuccess(false), 3000)
+        } catch (err: any) {
+            setImportError(err.message || 'Errore durante l\'importazione')
+        } finally {
+            setImporting(false)
+            e.target.value = '' // Reset input
+        }
     }
 
     return (
@@ -101,17 +124,49 @@ export default function SettingsPage() {
                 </motion.button>
             </div>
 
-            {/* Export */}
+            {/* Import/Export */}
             <div className="glass-card p-4">
-                <h2 className="font-bold text-white mb-1">📤 Export Dati</h2>
-                <p className="text-xs text-white/40 mb-4">Scarica tutte le sessioni in formato JSON</p>
-                <button
-                    type="button"
-                    onClick={exportJSON}
-                    className="btn-ghost w-full py-3 text-sm font-semibold"
-                >
-                    📥 Export JSON
-                </button>
+                <h2 className="font-bold text-white mb-1">💾 Gestione Dati</h2>
+                <p className="text-xs text-white/40 mb-4">Esporta o importa le tue sessioni (formato JSON)</p>
+
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        onClick={exportJSON}
+                        className="btn-ghost flex-1 py-3 text-sm font-semibold"
+                    >
+                        📤 Export
+                    </button>
+
+                    <label className="btn-ghost flex-1 py-3 text-sm font-semibold text-center cursor-pointer relative overflow-hidden">
+                        📥 Import
+                        <input
+                            type="file"
+                            accept=".json"
+                            onChange={handleImport}
+                            className="absolute inset-0 opacity-0 cursor-pointer"
+                            disabled={importing}
+                        />
+                    </label>
+                </div>
+
+                <AnimatePresence>
+                    {importing && (
+                        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[10px] text-white/40 mt-2 text-center animate-pulse">
+                            Importazione in corso...
+                        </motion.p>
+                    )}
+                    {importSuccess && (
+                        <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-[10px] text-green-400 mt-2 text-center font-bold">
+                            ✅ Dati importati con successo!
+                        </motion.p>
+                    )}
+                    {importError && (
+                        <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-[10px] text-red-400 mt-2 text-center font-bold">
+                            ❌ {importError}
+                        </motion.p>
+                    )}
+                </AnimatePresence>
             </div>
 
             {/* Danger zone */}

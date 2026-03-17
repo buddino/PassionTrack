@@ -246,6 +246,42 @@ export function exportJSON(): void {
     URL.revokeObjectURL(url)
 }
 
+export function importJSON(file: File): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            try {
+                const content = e.target?.result as string
+                const importedEntries = JSON.parse(content)
+
+                if (!Array.isArray(importedEntries)) {
+                    throw new Error("Il file non contiene un array di performance valido.")
+                }
+
+                const state = getState()
+                // Simple merge logic: check for ID duplicates or just append and clean
+                const existingIds = new Set(state.entries.map(e => e.id))
+                const newEntries = importedEntries.filter((e: any) => e.id && !existingIds.has(e.id))
+
+                if (newEntries.length === 0) {
+                    throw new Error("Nessuna nuova performance trovata (tutte già presenti).")
+                }
+
+                state.entries = [...state.entries, ...newEntries].sort((a, b) =>
+                    new Date(b.datetime).getTime() - new Date(a.datetime).getTime()
+                )
+
+                saveState(state)
+                resolve()
+            } catch (err) {
+                reject(err)
+            }
+        }
+        reader.onerror = () => reject(new Error("Errore durante la lettura del file."))
+        reader.readAsText(file)
+    })
+}
+
 export function getPartnerHistory(type?: PerformanceType): Array<{ nick: string; gender: Gender }> {
     const entries = getEntries()
     const map = new Map<string, Gender>()
