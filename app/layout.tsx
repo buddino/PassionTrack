@@ -12,8 +12,6 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: 'PassionTrack',
   description: 'Track your intimate performances — private, local, yours.',
-  manifest: '/manifest.json',
-  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'PassionTrack' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
