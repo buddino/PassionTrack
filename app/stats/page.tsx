@@ -77,7 +77,17 @@ export default function StatsPage() {
             count
         }))
 
-        return { avg, best, peakDay, peakHour, topPartner: partners[0]?.nick ?? '—', hourlyData }
+        const locationMap = new Map<string, number>()
+        typeEntries.forEach(e => {
+            if (e.location?.trim()) {
+                const loc = e.location.trim()
+                locationMap.set(loc, (locationMap.get(loc) ?? 0) + 1)
+            }
+        })
+        const topLocation = Array.from(locationMap.entries())
+            .sort((a, b) => b[1] - a[1])[0]?.[0] ?? '—'
+
+        return { avg, best, peakDay, peakHour, topPartner: partners[0]?.nick ?? '—', hourlyData, topLocation }
     }, [typeEntries, partners])
 
     const partnerStats = useMemo(() => {
@@ -219,25 +229,23 @@ export default function StatsPage() {
             </div>
 
             {/* Global stats (Filtered) */}
-            {
-                globalStats && (
-                    <div className="space-y-4">
-                        <div>
-                            <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3">🌍 Overview</h2>
-                            <div className="grid grid-cols-2 gap-2">
-                                <StatCard label="Media" value={globalStats?.avg.toFixed(2) ?? '0.00'} emoji="📈" color={typeColor} />
-                                <StatCard label="Top (Count)" value={globalStats?.topPartner ?? '—'} emoji="👑" color={typeColor} />
-                                <StatCard label="Giorno più attivo" value={globalStats ? WEEKDAY_NAMES[globalStats.peakDay] : '—'} emoji="📅" color={typeColor} />
-                                <StatCard label="Orario di picco" value={globalStats ? `${globalStats.peakHour}:00` : '--:--'} emoji="⏰" color={typeColor} />
-                                <StatCard label="Sessioni filtrate" value={typeEntries.length} emoji="🎯" color={typeColor} />
-                                <StatCard label="Record assoluto" value={globalStats?.best.weightedAvg.toFixed(1) ?? '0.0'} emoji="🏆" color={typeColor} />
-                            </div>
+            {globalStats && (
+                <div className="space-y-4">
+                    <div>
+                        <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3">🌍 Overview</h2>
+                        <div className="grid grid-cols-2 gap-2">
+                            <StatCard label="Media" value={globalStats?.avg.toFixed(2) ?? '0.00'} emoji="📈" color={typeColor} />
+                            <StatCard label="Top (Count)" value={globalStats?.topPartner ?? '—'} emoji="👑" color={typeColor} />
+                            <StatCard label="Giorno più attivo" value={globalStats ? WEEKDAY_NAMES[globalStats.peakDay] : '—'} emoji="📅" color={typeColor} />
+                            <StatCard label="Orario di picco" value={globalStats ? `${globalStats.peakHour}:00` : '--:--'} emoji="⏰" color={typeColor} />
+                            <StatCard label="Sessioni filtrate" value={typeEntries.length} emoji="🎯" color={typeColor} />
+                            <StatCard label="Top Luogo" value={globalStats?.topLocation ?? '—'} emoji="📍" color={typeColor} />
                         </div>
-
-                        {globalStats && <TimeHistogram data={globalStats.hourlyData} />}
                     </div>
-                )
-            }
+
+                    {globalStats && <TimeHistogram data={globalStats.hourlyData} />}
+                </div>
+            )}
 
             {/* Partner selector */}
             {

@@ -5,23 +5,36 @@ import { motion } from 'framer-motion'
 import { scoreToColor } from '@/lib/scoring'
 
 interface SliderInputProps {
-    value: number
+    value?: number
     onChange: (v: number) => void
     label: string
     emoji: string
     description: string
     index: number
+    min?: number
+    max?: number
+    step?: number
 }
 
-export default function SliderInput({ value = 5.0, onChange, label, emoji, description, index }: SliderInputProps) {
+export default function SliderInput({
+    value = 5.0,
+    onChange,
+    label,
+    emoji,
+    description,
+    index,
+    min = 0,
+    max = 10,
+    step = 0.5
+}: SliderInputProps) {
     const trackRef = useRef<HTMLInputElement>(null)
     const color = scoreToColor(value)
 
     useEffect(() => {
         if (!trackRef.current) return
-        const pct = (value / 10) * 100
+        const pct = ((value - min) / (max - min)) * 100
         trackRef.current.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${pct}%, rgba(255,255,255,0.1) ${pct}%, rgba(255,255,255,0.1) 100%)`
-    }, [value, color])
+    }, [value, color, min, max])
 
     return (
         <motion.div
@@ -46,26 +59,26 @@ export default function SliderInput({ value = 5.0, onChange, label, emoji, descr
                         className="text-xl font-bold min-w-[40px] text-right tabular-nums"
                         style={{ color }}
                     >
-                        {value.toFixed(1)}
+                        {value.toFixed(step % 1 === 0 ? 0 : (step.toString().split('.')[1]?.length || 1))}
                     </motion.span>
-                    <span className="text-[10px] text-white/30">/ 10</span>
+                    <span className="text-[10px] text-white/30">/ {max}</span>
                 </div>
             </div>
 
             <div className="flex items-center gap-3">
-                <span className="text-xs text-white/30 w-4 text-right">0</span>
+                <span className="text-xs text-white/30 w-4 text-right">{min}</span>
                 <input
                     ref={trackRef}
                     type="range"
-                    min={0}
-                    max={10}
-                    step={0.5}
+                    min={min}
+                    max={max}
+                    step={step}
                     value={value}
                     onChange={(e) => onChange(parseFloat(e.target.value))}
                     className="custom-slider flex-1"
                     style={{ cursor: 'pointer' }}
                 />
-                <span className="text-xs text-white/30 w-4">10</span>
+                <span className="text-xs text-white/30 w-4">{max}</span>
             </div>
         </motion.div>
     )

@@ -51,7 +51,14 @@ export default function PartnerDropdown({ type, nick, gender, onNickChange, onGe
         return () => document.removeEventListener('mousedown', handleClick)
     }, [])
 
-    const filtered = history.filter((h) => h.nick.toLowerCase().includes(nick.toLowerCase()))
+    const [searchTerm, setSearchTerm] = useState('')
+    const isToy = type === 'fai-da-te'
+
+    const filtered = history.filter((h) =>
+        h.nick.toLowerCase().includes(searchTerm.toLowerCase() || nick.toLowerCase())
+    )
+
+    const showSearch = history.length > 10
 
     const genderOptions: { value: Gender; label: string; emoji: string }[] = [
         { value: 'M', label: 'Uomo', emoji: '♂️' },
@@ -59,7 +66,6 @@ export default function PartnerDropdown({ type, nick, gender, onNickChange, onGe
         { value: 'O', label: 'Altro', emoji: '⚧️' },
     ]
 
-    const isToy = type === 'fai-da-te'
     const exactMatch = history.find(h => h.nick.toLowerCase() === nick.trim().toLowerCase())
 
     return (
@@ -111,34 +117,53 @@ export default function PartnerDropdown({ type, nick, gender, onNickChange, onGe
                 </div>
 
                 <AnimatePresence>
-                    {open && filtered.length > 0 && (
+                    {open && (history.length > 0) && (
                         <motion.div
                             initial={{ opacity: 0, y: -8 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -8 }}
                             transition={{ duration: 0.2 }}
-                            className="absolute z-50 w-full mt-2 rounded-xl overflow-hidden"
+                            className="absolute z-50 w-full mt-2 rounded-xl overflow-hidden flex flex-col"
                             style={{
                                 background: 'rgba(20,20,30,0.97)',
                                 border: '1px solid rgba(255,255,255,0.12)',
                                 boxShadow: '0 16px 40px rgba(0,0,0,0.8)',
                             }}
                         >
-                            {filtered.map((h) => (
-                                <button
-                                    key={h.nick}
-                                    type="button"
-                                    onClick={() => {
-                                        onNickChange(h.nick)
-                                        onGenderChange(h.gender)
-                                        setOpen(false)
-                                    }}
-                                    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/5 transition-colors"
-                                >
-                                    <span className="text-lg">{h.gender === 'M' ? '♂️' : h.gender === 'F' ? '♀️' : '⚧️'}</span>
-                                    <span className="text-white/90 font-medium">{h.nick}</span>
-                                </button>
-                            ))}
+                            {showSearch && (
+                                <div className="p-2 border-b border-white/10 bg-white/5">
+                                    <input
+                                        type="text"
+                                        autoFocus
+                                        placeholder="Cerca partner..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="w-full px-3 py-2 bg-white/5 rounded-lg text-xs text-white outline-none border border-white/10 focus:border-white/20"
+                                    />
+                                </div>
+                            )}
+                            <div className="max-h-[220px] overflow-y-auto scrollbar-hide">
+                                {filtered.length > 0 ? (
+                                    filtered.map((h) => (
+                                        <button
+                                            key={h.nick}
+                                            type="button"
+                                            onClick={() => {
+                                                onNickChange(h.nick)
+                                                onGenderChange(h.gender)
+                                                setOpen(false)
+                                                setSearchTerm('')
+                                            }}
+                                            className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/5 transition-colors"
+                                        >
+                                            <span className="text-lg">{h.gender === 'M' ? '♂️' : h.gender === 'F' ? '♀️' : '⚧️'}</span>
+                                            <span className="text-white/90 font-medium">{h.nick}</span>
+                                        </button>
+                                    ))
+                                ) : (
+                                    <div className="px-4 py-3 text-xs text-white/30 italic">Nessun risultato</div>
+                                )}
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>

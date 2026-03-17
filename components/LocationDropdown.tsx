@@ -75,32 +75,38 @@ export default function LocationDropdown({ location, onChange }: LocationDropdow
                 </div>
 
                 <AnimatePresence>
-                    {open && filtered.length > 0 && (
+                    {open && (history.length > 0) && (
                         <motion.div
                             initial={{ opacity: 0, y: -8 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -8 }}
                             transition={{ duration: 0.2 }}
-                            className="absolute z-50 w-full mt-2 rounded-xl overflow-hidden"
+                            className="absolute z-50 w-full mt-2 rounded-xl overflow-hidden flex flex-col"
                             style={{
                                 background: 'rgba(20,20,30,0.97)',
                                 border: '1px solid rgba(255,255,255,0.12)',
                                 boxShadow: '0 16px 40px rgba(0,0,0,0.8)',
                             }}
                         >
-                            {filtered.map((loc) => (
-                                <button
-                                    key={loc}
-                                    type="button"
-                                    onClick={() => {
-                                        onChange(loc)
-                                        setOpen(false)
-                                    }}
-                                    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/5 transition-colors"
-                                >
-                                    <span className="text-white/90 font-medium">{loc}</span>
-                                </button>
-                            ))}
+                            <div className="max-h-[220px] overflow-y-auto scrollbar-hide">
+                                {filtered.length > 0 ? (
+                                    filtered.map((loc) => (
+                                        <button
+                                            key={loc}
+                                            type="button"
+                                            onClick={() => {
+                                                onChange(loc)
+                                                setOpen(false)
+                                            }}
+                                            className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/5 transition-colors"
+                                        >
+                                            <span className="text-white/90 font-medium">{loc}</span>
+                                        </button>
+                                    ))
+                                ) : (
+                                    <div className="px-4 py-3 text-xs text-white/30 italic">Nessun risultato</div>
+                                )}
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
