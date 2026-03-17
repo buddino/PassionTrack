@@ -217,11 +217,11 @@ export default function StatsPage() {
                     <button
                         type="button"
                         onClick={() => { setSelectedType('All'); setSelectedPartner(null) }}
-                        className="shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+                        className="shrink-0 px-4 h-11 flex items-center justify-center rounded-xl text-xs font-bold transition-all uppercase tracking-wider"
                         style={{
                             background: selectedType === 'All' ? 'linear-gradient(135deg,#FF0033,#8B00FF)' : 'rgba(255,255,255,0.06)',
                             border: `1px solid ${selectedType === 'All' ? 'rgba(255,0,51,0.5)' : 'rgba(255,255,255,0.1)'}`,
-                            color: selectedType === 'All' ? 'white' : 'rgba(255,255,255,0.6)',
+                            color: 'white',
                             boxShadow: selectedType === 'All' ? '0 4px 15px rgba(255,0,51,0.3)' : 'none',
                         }}
                     >
@@ -235,15 +235,16 @@ export default function StatsPage() {
                                 key={type}
                                 type="button"
                                 onClick={() => { setSelectedType(type); setSelectedPartner(null) }}
-                                className="shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+                                className="shrink-0 w-11 h-11 flex items-center justify-center rounded-xl text-lg transition-all"
                                 style={{
                                     background: isActive ? `linear-gradient(135deg, ${conf.color}90, ${conf.color}40)` : 'rgba(255,255,255,0.06)',
                                     border: `1px solid ${isActive ? conf.color : 'rgba(255,255,255,0.1)'}`,
-                                    color: isActive ? 'white' : 'rgba(255,255,255,0.6)',
+                                    color: 'white',
                                     boxShadow: isActive ? `0 4px 15px ${conf.color}40` : 'none',
                                 }}
+                                title={conf.label}
                             >
-                                {conf.emoji} {conf.label}
+                                {conf.emoji}
                             </button>
                         )
                     })}
