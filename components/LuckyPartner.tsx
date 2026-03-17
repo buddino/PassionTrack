@@ -119,7 +119,7 @@ export default function LuckyPartner() {
         <div className="mt-8 mb-12">
             <div className="flex items-center gap-3 mb-4">
                 <span className="text-2xl">🎲</span>
-                <h2 className="text-xl font-bold text-white">Mi sento fortunato</h2>
+                <h2 className="text-xl font-bold text-white">Chi chiavo stasera?</h2>
             </div>
 
             <div className="glass-card p-5">
@@ -207,8 +207,8 @@ export default function LuckyPartner() {
                         className="btn-neon w-full py-4 text-sm font-bold flex items-center justify-center gap-2 group"
                         whileTap={{ scale: 0.95 }}
                     >
-                        <span className={`text-xl ${isRolling ? 'animate-spin' : 'group-hover:rotate-12 transition-transform'}`}>🔑</span>
-                        Chi chiavo stasera?
+                        <span className={`text-xl ${isRolling ? 'animate-spin' : 'group-hover:rotate-12 transition-transform'}`}>🎲</span>
+                        Tira i dadi
                     </motion.button>
                 </div>
             </div>

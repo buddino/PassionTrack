@@ -7,6 +7,7 @@ const tabs = [
     { href: '/', label: 'Nuovo', emoji: '➕' },
     { href: '/stats', label: 'Stats', emoji: '📊' },
     { href: '/rewards', label: 'Rewards', emoji: '🏆' },
+    { href: '/more', label: 'Altro', emoji: '🎲' },
     { href: '/settings', label: 'Impostazioni', emoji: '⚙️' },
 ]
 

@@ -11,7 +11,6 @@ import CustomDatePicker from '@/components/CustomDatePicker'
 import HourPicker from '@/components/HourPicker'
 import PerformanceTypePicker from '@/components/PerformanceTypePicker'
 import LocationDropdown from '@/components/LocationDropdown'
-import LuckyPartner from '@/components/LuckyPartner'
 import { saveEntry, getSettings, getEntries, getUnlockedChallenges, addUnlockedChallenge } from '@/lib/store'
 import { CHALLENGES, type Challenge } from '@/lib/challenges'
 import { weightedAverage } from '@/lib/scoring'
@@ -223,8 +222,6 @@ export default function HomePage() {
               >
                 Avanti →
               </motion.button>
-
-              <LuckyPartner />
             </motion.div>
           )}
 
