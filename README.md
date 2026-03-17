@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PassionTrack 🍑🔥
 
-## Getting Started
+*Perché la memoria è labile, ma le statistiche sono per sempre.*
 
-First, run the development server:
+Benvenuto in **PassionTrack**, l'app definitiva per chi vuole dare un senso (numerico) alla propria vita sentimentale e sessuale. Che tu sia un instancabile amatore o un collezionista di "prime date", PassionTrack ti aiuta a tenere traccia di ogni incontro con precisione chirurgica e un tocco di ironia.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛡️ Privacy in Armor (I dati sono tuoi!)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Sappiamo quanto questi dati siano sensibili. Per questo motivo:
+- **Zero Cloud**: Niente server, niente database centralizzati, niente hacker russi che sbirciano tra le tue lenzuola.
+- **Solo Local Storage**: Tutti i dati vengono salvati esclusivamente nella memoria del tuo browser o dispositivo.
+- **Nessun Account**: Non chiediamo email, password o accesso ai social. Sei un fantasma.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+> [!WARNING]
+> **Occhio al Browser!** Poiché non ci sono account, se svuoti la cache, cambi browser o formatti lo smartphone... **puff!** I tuoi record di atletismo da camera svaniranno nel nulla. Uomo/donna avvisato/a...Però puoi esportare/importare un backup!
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## ✨ Features Principali
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Performance Wizard 🧙‍♂️**: Un sistema guidato per registrare i tuoi incontri (Scopate, Limoni, Fai-da-te) valutando diversi criteri come Passione, Tecnica e Preliminari.
+- **Stats Evolute 📊**: Grafici di trend, heatmap dei giorni più attivi e breakdown dettagliati per ogni singolo partner (o toy). Scopri chi ti fa battere davvero il cuore (e non solo).
+- **Rewards & Badges 🏆**: Sblocca medaglie per i tuoi traguardi! Dalle marathon session ai weekend di fuoco, ogni successo merita un riconoscimento.
+- **Chi Chiavo Stasera? (Dice Roll) 🎲**: Indeciso/a? Lascia che sia il destino a decidere la tua prossima &quot;vittima&quot; estraendo a sorte tra le tue fiamme passate.
+- **Pesi Personalizzabili ⚙️**: Ogni persona è diversa! Nelle impostazioni puoi decidere quanto ogni criterio (Passione, Tecnica, Durata, ecc.) deve pesare sul voto finale. Sei tu il giudice supremo.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🧪 Esperimento di "Vibe Coding"
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Questo progetto non è nato tra le mura di un'azienda noiosa, ma è frutto di un esperimento personale di **Vibe Coding pesante**. 🚀
+È stato sviluppato fluttuando tra prompt creativi e visioni estemporanee, testando i limiti della programmazione assistita dall'AI per creare un'esperienza utente premium, fluida e decisamente fuori dagli schemi.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+*Made with ❤️ (and a lot of vibing) for your pleasure.*
