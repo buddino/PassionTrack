@@ -181,7 +181,7 @@ export default function StatsPage() {
             {/* Type Filter */}
             <div>
                 <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3">🏷️ Filtra per Tipo</h2>
-                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+                <div className="flex flex-wrap gap-2 pb-1">
                     <button
                         type="button"
                         onClick={() => { setSelectedType('All'); setSelectedPartner(null) }}
@@ -219,105 +219,111 @@ export default function StatsPage() {
             </div>
 
             {/* Global stats (Filtered) */}
-            {globalStats && (
-                <div className="space-y-4">
-                    <div>
-                        <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3">🌍 Overview</h2>
-                        <div className="grid grid-cols-2 gap-2">
-                            <StatCard label="Media" value={globalStats.avg.toFixed(2)} emoji="📈" color={typeColor} />
-                            <StatCard label="Top (Count)" value={globalStats.topPartner} emoji="👑" color={typeColor} />
-                            <StatCard label="Giorno più attivo" value={WEEKDAY_NAMES[globalStats.peakDay]} emoji="📅" color={typeColor} />
-                            <StatCard label="Orario di picco" value={`${globalStats.peakHour}:00`} emoji="⏰" color={typeColor} />
-                            <StatCard label="Sessioni filtrate" value={typeEntries.length} emoji="🎯" color={typeColor} />
-                            <StatCard label="Record assoluto" value={globalStats.best.weightedAvg.toFixed(1)} emoji="🏆" color={typeColor} />
+            {
+                globalStats && (
+                    <div className="space-y-4">
+                        <div>
+                            <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3">🌍 Overview</h2>
+                            <div className="grid grid-cols-2 gap-2">
+                                <StatCard label="Media" value={globalStats?.avg.toFixed(2) ?? '0.00'} emoji="📈" color={typeColor} />
+                                <StatCard label="Top (Count)" value={globalStats?.topPartner ?? '—'} emoji="👑" color={typeColor} />
+                                <StatCard label="Giorno più attivo" value={globalStats ? WEEKDAY_NAMES[globalStats.peakDay] : '—'} emoji="📅" color={typeColor} />
+                                <StatCard label="Orario di picco" value={globalStats ? `${globalStats.peakHour}:00` : '--:--'} emoji="⏰" color={typeColor} />
+                                <StatCard label="Sessioni filtrate" value={typeEntries.length} emoji="🎯" color={typeColor} />
+                                <StatCard label="Record assoluto" value={globalStats?.best.weightedAvg.toFixed(1) ?? '0.0'} emoji="🏆" color={typeColor} />
+                            </div>
                         </div>
-                    </div>
 
-                    <TimeHistogram data={globalStats.hourlyData} />
-                </div>
-            )}
+                        {globalStats && <TimeHistogram data={globalStats.hourlyData} />}
+                    </div>
+                )
+            }
 
             {/* Partner selector */}
-            {partners.length > 0 && (
-                <div>
-                    <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3">{selectedType === 'fai-da-te' ? '🛠️ Per Toy' : '👤 Per Partner'}</h2>
-                    <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-                        {partners.map(({ nick, count }) => (
-                            <button
-                                key={nick}
-                                type="button"
-                                onClick={() => setSelectedPartner(selectedPartner === nick ? null : nick)}
-                                className="flex flex-col items-center justify-center shrink-0 w-24 p-3 rounded-xl transition-all"
-                                style={{
-                                    background: selectedPartner === nick ? `linear-gradient(135deg, ${typeColor}70, rgba(20,20,30,0.8))` : 'rgba(255,255,255,0.06)',
-                                    border: `1px solid ${selectedPartner === nick ? typeColor : 'rgba(255,255,255,0.1)'}`,
-                                    color: selectedPartner === nick ? 'white' : 'rgba(255,255,255,0.6)',
-                                    boxShadow: selectedPartner === nick ? `0 4px 15px ${typeColor}40` : 'none',
-                                }}
-                            >
-                                <span className="font-semibold text-sm truncate w-full text-center">{nick}</span>
-                                <span className="text-white/40 text-[10px] mt-1">{count} volte</span>
-                            </button>
-                        ))}
-                    </div>
+            {
+                partners.length > 0 && (
+                    <div>
+                        <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3">{selectedType === 'fai-da-te' ? '🛠️ Per Toy' : '👤 Per Partner'}</h2>
+                        <div className="-mx-4 px-4 flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+                            {partners.map(({ nick, count }) => (
+                                <button
+                                    key={nick}
+                                    type="button"
+                                    onClick={() => setSelectedPartner(selectedPartner === nick ? null : nick)}
+                                    className="flex flex-col items-center justify-center shrink-0 w-24 p-3 rounded-xl transition-all"
+                                    style={{
+                                        background: selectedPartner === nick ? `linear-gradient(135deg, ${typeColor}70, rgba(20,20,30,0.8))` : 'rgba(255,255,255,0.06)',
+                                        border: `1px solid ${selectedPartner === nick ? typeColor : 'rgba(255,255,255,0.1)'}`,
+                                        color: selectedPartner === nick ? 'white' : 'rgba(255,255,255,0.6)',
+                                        boxShadow: selectedPartner === nick ? `0 4px 15px ${typeColor}40` : 'none',
+                                    }}
+                                >
+                                    <span className="font-semibold text-sm truncate w-full text-center">{nick}</span>
+                                    <span className="text-white/40 text-[10px] mt-1">{count} volte</span>
+                                </button>
+                            ))}
+                        </div>
 
-                    {partnerStats && selectedPartner && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="mt-3 space-y-3"
-                        >
-                            <div className="grid grid-cols-3 gap-2">
-                                <StatCard label="Media" value={partnerStats.avg.toFixed(2)} emoji="📊" />
-                                <StatCard label="Record" value={partnerStats.best.weightedAvg.toFixed(1)} emoji="🏆" />
-                                <StatCard label="Min" value={partnerStats.worst.weightedAvg.toFixed(1)} emoji="📉" />
-                            </div>
-                            {/* Per-statement breakdown (Only shown when a specific type is selected) */}
-                            {selectedType !== 'All' && partnerStats.stmtAvgs.length > 0 && (
-                                <div className="glass-card p-4">
-                                    <h3 className="text-xs text-white/40 uppercase tracking-widest mb-3 font-semibold">Medie per Parametro</h3>
-                                    {partnerStats.stmtAvgs.map((s, i) => {
-                                        const pct = (s.avg / 10) * 100
-                                        return (
-                                            <div key={s.id} className="mb-2.5">
-                                                <div className="flex justify-between text-xs mb-1">
-                                                    <span className="text-white/60">{s.emoji} {s.label}</span>
-                                                    <span className="text-white font-semibold">{s.avg.toFixed(1)}</span>
-                                                </div>
-                                                <div className="h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                                                    <motion.div
-                                                        className="h-full rounded-full"
-                                                        style={{ background: `linear-gradient(90deg, ${typeColor}, #8B00FF)`, width: `${pct}%` }}
-                                                        initial={{ width: 0 }}
-                                                        animate={{ width: `${pct}%` }}
-                                                        transition={{ duration: 0.5, delay: i * 0.04 }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        )
-                                    })}
+                        {partnerStats && selectedPartner && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="mt-3 space-y-3"
+                            >
+                                <div className="grid grid-cols-3 gap-2">
+                                    <StatCard label="Media" value={partnerStats?.avg.toFixed(2) ?? '0.00'} emoji="📊" />
+                                    <StatCard label="Record" value={partnerStats?.best.weightedAvg.toFixed(1) ?? '0.0'} emoji="🏆" />
+                                    <StatCard label="Min" value={partnerStats?.worst.weightedAvg.toFixed(1) ?? '0.0'} emoji="📉" />
                                 </div>
-                            )}
-                            {selectedType === 'All' && (
-                                <div className="text-center text-[10px] text-white/40 py-2">
-                                    Seleziona un tipo specifico per vedere le medie dei punteggi dettagliati.
-                                </div>
-                            )}
-                        </motion.div>
-                    )}
-                </div>
-            )}
+                                {/* Per-statement breakdown (Only shown when a specific type is selected) */}
+                                {selectedType !== 'All' && partnerStats.stmtAvgs.length > 0 && (
+                                    <div className="glass-card p-4">
+                                        <h3 className="text-xs text-white/40 uppercase tracking-widest mb-3 font-semibold">Medie per Parametro</h3>
+                                        {partnerStats.stmtAvgs.map((s, i) => {
+                                            const pct = (s.avg / 10) * 100
+                                            return (
+                                                <div key={s.id} className="mb-2.5">
+                                                    <div className="flex justify-between text-xs mb-1">
+                                                        <span className="text-white/60">{s.emoji} {s.label}</span>
+                                                        <span className="text-white font-semibold">{s.avg.toFixed(1)}</span>
+                                                    </div>
+                                                    <div className="h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                                                        <motion.div
+                                                            className="h-full rounded-full"
+                                                            style={{ background: `linear-gradient(90deg, ${typeColor}, #8B00FF)`, width: `${pct}%` }}
+                                                            initial={{ width: 0 }}
+                                                            animate={{ width: `${pct}%` }}
+                                                            transition={{ duration: 0.5, delay: i * 0.04 }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                )}
+                                {selectedType === 'All' && (
+                                    <div className="text-center text-[10px] text-white/40 py-2">
+                                        Seleziona un tipo specifico per vedere le medie dei punteggi dettagliati.
+                                    </div>
+                                )}
+                            </motion.div>
+                        )}
+                    </div>
+                )
+            }
 
             {/* Trend chart */}
-            {typeEntries.length >= 2 ? (
-                <TrendChart entries={typeEntries} partnerFilter={selectedPartner ?? undefined} />
-            ) : (
-                <div className="text-center py-6 text-white/30 text-sm">
-                    Aggiungi almeno 2 sessioni per visualizzare il trend 📉
-                </div>
-            )}
+            {
+                typeEntries.length >= 2 ? (
+                    <TrendChart entries={typeEntries} partnerFilter={selectedPartner ?? undefined} />
+                ) : (
+                    <div className="text-center py-6 text-white/30 text-sm">
+                        Aggiungi almeno 2 sessioni per visualizzare il trend 📉
+                    </div>
+                )
+            }
 
             <div className="h-4" />
-        </div>
+        </div >
     )
 }

@@ -148,16 +148,6 @@ export default function TrendChart({ entries, partnerFilter }: TrendChartProps) 
                             tickLine={false}
                             ticks={[0, 2, 4, 6, 8, 10]}
                         />
-                        <Tooltip
-                            contentStyle={{
-                                background: 'rgba(15,15,25,0.95)',
-                                border: `1px solid ${primaryColor}40`,
-                                borderRadius: 12,
-                                color: 'white',
-                                fontSize: 12,
-                            }}
-                            labelStyle={{ color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}
-                        />
                         <Legend
                             layout={showStatements && activeType ? 'vertical' : 'horizontal'}
                             verticalAlign="bottom"
@@ -180,7 +170,6 @@ export default function TrendChart({ entries, partnerFilter }: TrendChartProps) 
                             strokeWidth={2.5}
                             hide={hiddenLines.has('Media')}
                             dot={{ fill: primaryColor, r: 3, strokeWidth: 0 }}
-                            activeDot={{ r: 5, fill: primaryColor }}
                             name="Media Performance"
                         />
                         <Line
@@ -191,7 +180,6 @@ export default function TrendChart({ entries, partnerFilter }: TrendChartProps) 
                             hide={hiddenLines.has('Mood')}
                             strokeDasharray="5 5"
                             dot={{ fill: '#8B00FF', r: 2, strokeWidth: 0 }}
-                            activeDot={{ r: 4, fill: '#8B00FF' }}
                             name="Mood / Eccitazione"
                         />
                         {showStatements && activeType &&
