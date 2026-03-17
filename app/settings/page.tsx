@@ -73,7 +73,7 @@ export default function SettingsPage() {
                                 <span className="text-sm font-medium text-white/80">{s.label}</span>
                             </div>
                             <span className="text-sm font-bold text-white/90 min-w-[32px] text-right">
-                                {weights[i].toFixed(2)}
+                                {(weights[i] ?? 1.0).toFixed(2)}
                             </span>
                         </div>
                         <input
@@ -81,11 +81,11 @@ export default function SettingsPage() {
                             min={0}
                             max={3}
                             step={0.25}
-                            value={weights[i]}
+                            value={weights[i] ?? 1.0}
                             onChange={(e) => handleWeightChange(i, parseFloat(e.target.value))}
                             className="custom-slider w-full"
                             style={{
-                                background: `linear-gradient(to right, rgba(139,0,255,0.8) 0%, rgba(139,0,255,0.8) ${(weights[i] / 3) * 100}%, rgba(255,255,255,0.1) ${(weights[i] / 10) * 100}%, rgba(255,255,255,0.1) 100%)`,
+                                background: `linear-gradient(to right, rgba(139,0,255,0.8) 0%, rgba(139,0,255,0.8) ${((weights[i] ?? 1.0) / 3) * 100}%, rgba(255,255,255,0.1) ${((weights[i] ?? 1.0) / 10) * 100}%, rgba(255,255,255,0.1) 100%)`,
                             }}
                         />
                     </div>

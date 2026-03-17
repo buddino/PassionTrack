@@ -13,7 +13,7 @@ interface SliderInputProps {
     index: number
 }
 
-export default function SliderInput({ value, onChange, label, emoji, description, index }: SliderInputProps) {
+export default function SliderInput({ value = 5.0, onChange, label, emoji, description, index }: SliderInputProps) {
     const trackRef = useRef<HTMLInputElement>(null)
     const color = scoreToColor(value)
 

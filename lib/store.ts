@@ -149,11 +149,17 @@ function getState(): AppState {
             mergedState.unlockedChallenges = []
         }
 
-        // Ensure settings are present
         if (!mergedState.settings) {
             mergedState.settings = { weights: DEFAULT_WEIGHTS }
         } else if (!mergedState.settings.weights) {
             mergedState.settings.weights = DEFAULT_WEIGHTS
+        } else if (mergedState.settings.weights.length < DEFAULT_WEIGHTS.length) {
+            // Fill missing weights with 1.0 (default)
+            const currentWeights = [...mergedState.settings.weights]
+            for (let i = currentWeights.length; i < DEFAULT_WEIGHTS.length; i++) {
+                currentWeights[i] = 1.0
+            }
+            mergedState.settings.weights = currentWeights
         }
 
         return mergedState
