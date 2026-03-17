@@ -42,11 +42,11 @@ export default function MorePage() {
                         >
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FF0033] to-[#8B00FF] flex items-center justify-center text-2xl shadow-lg shadow-[#FF0033]/20">
-                                    🎲
+                                    🔑
                                 </div>
                                 <div className="text-left">
                                     <h3 className="text-lg font-bold text-white">Chi chiavo stasera?</h3>
-                                    <p className="text-white/40 text-xs">Lascia che il destino decida per te</p>
+                                    <p className="text-white/40 text-xs">Fai scegliere al destino chi sarà la prossima vittima estraendo a sorte (o quasi) tra le precedenti fiamme!</p>
                                 </div>
                             </div>
                             <span className="text-white/20 group-hover:text-white/40 transition-colors text-xl">→</span>

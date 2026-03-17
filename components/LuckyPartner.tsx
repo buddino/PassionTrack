@@ -117,10 +117,13 @@ export default function LuckyPartner() {
 
     return (
         <div className="mt-8 mb-12">
-            <div className="flex items-center gap-3 mb-4">
-                <span className="text-2xl">🎲</span>
+            <div className="flex items-center gap-3 mb-1">
+                <span className="text-2xl">🔑</span>
                 <h2 className="text-xl font-bold text-white">Chi chiavo stasera?</h2>
             </div>
+            <p className="text-white/40 text-xs mb-6 italic leading-relaxed">
+                Lascia che il destino scelga la tua prossima &quot;vittima&quot;! Un&apos;estrazione (quasi) casuale tra le tue fiamme passate per riaccendere la passione.
+            </p>
 
             <div className="glass-card p-5">
                 <div className="space-y-4">
