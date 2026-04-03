@@ -12,6 +12,8 @@ import HourPicker from '@/components/HourPicker'
 import PerformanceTypePicker from '@/components/PerformanceTypePicker'
 import LocationDropdown from '@/components/LocationDropdown'
 import { saveEntry, getSettings, getEntries, getUnlockedChallenges, addUnlockedChallenge } from '@/lib/store'
+import type { PerformanceEntry } from '@/lib/store'
+import ShareModal from '@/components/ShareModal'
 import { CHALLENGES, type Challenge } from '@/lib/challenges'
 import { weightedAverage } from '@/lib/scoring'
 import { STATEMENTS, PERFORMANCE_TYPES_CONFIG, DEFAULT_WEIGHTS } from '@/lib/constants'
@@ -51,6 +53,8 @@ export default function HomePage() {
   const [newlyUnlocked, setNewlyUnlocked] = useState<Challenge[]>([])
   const [showConfetti, setShowConfetti] = useState(false)
   const [savedScore, setSavedScore] = useState<number | null>(null)
+  const [lastSavedEntry, setLastSavedEntry] = useState<PerformanceEntry | null>(null)
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const { width, height } = useWindowSize()
 
   useEffect(() => {
@@ -97,7 +101,8 @@ export default function HomePage() {
       scores,
       weightedAvg: avg,
     }
-    saveEntry(entry)
+    const saved = saveEntry(entry)
+    setLastSavedEntry(saved)
 
     const allEntries = getEntries()
     const unlockedIds = getUnlockedChallenges()
@@ -131,8 +136,10 @@ export default function HomePage() {
     setMood(3)
     setScores([])
     setSavedScore(null)
+    setLastSavedEntry(null)
     setNewlyUnlocked([])
     setShowConfetti(false)
+    setIsShareModalOpen(false)
   }
 
   const getStatementLabel = (s: typeof STATEMENTS[0]) => {
@@ -413,8 +420,17 @@ export default function HomePage() {
               <div className="flex flex-col gap-3 px-4">
                 <motion.button
                   type="button"
+                  onClick={() => setIsShareModalOpen(true)}
+                  className="btn-ghost w-full py-4 text-base font-bold flex items-center justify-center gap-2"
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <span>📤</span> Condividi Risultato
+                </motion.button>
+
+                <motion.button
+                  type="button"
                   onClick={handleReset}
-                  className="btn-neon w-full py-4 text-base font-bold"
+                  className="btn-neon w-full py-4 text-base font-bold mt-2"
                   whileTap={{ scale: 0.97 }}
                 >
                   ➕ Nuova Sessione
@@ -423,6 +439,12 @@ export default function HomePage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        <ShareModal 
+          isOpen={isShareModalOpen} 
+          onClose={() => setIsShareModalOpen(false)} 
+          entry={lastSavedEntry} 
+        />
       </div>
     </>
   )

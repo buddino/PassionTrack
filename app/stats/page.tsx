@@ -10,6 +10,9 @@ import TimeHistogram from '@/components/TimeHistogram'
 import TrendChart from '@/components/TrendChart'
 import { STATEMENTS, PERFORMANCE_TYPES_CONFIG } from '@/lib/constants'
 import type { PerformanceType } from '@/lib/constants'
+import { Share2, Trash2 } from 'lucide-react'
+import { deleteEntry } from '@/lib/store'
+import ShareModal from '@/components/ShareModal'
 
 const WEEKDAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab']
 
@@ -28,10 +31,28 @@ export default function StatsPage() {
     const [selectedType, setSelectedType] = useState<PerformanceType | 'All'>('All')
     const [selectedPartner, setSelectedPartner] = useState<string | null>(null)
     const [selectedDate, setSelectedDate] = useState<string | null>(null)
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+    const [selectedEntryForShare, setSelectedEntryForShare] = useState<PerformanceEntry | null>(null)
+
+    const refreshEntries = () => {
+        setEntries(getEntries())
+    }
 
     useEffect(() => {
-        setEntries(getEntries())
+        refreshEntries()
     }, [])
+
+    const handleDelete = (id: string) => {
+        if (window.confirm('Sei sicuro di voler eliminare questa performance? L\'azione è irreversibile.')) {
+            deleteEntry(id)
+            refreshEntries()
+        }
+    }
+
+    const handleShare = (entry: PerformanceEntry) => {
+        setSelectedEntryForShare(entry)
+        setIsShareModalOpen(true)
+    }
 
     const typeEntries = useMemo(() => {
         if (selectedType === 'All') return entries
@@ -195,9 +216,27 @@ export default function StatsPage() {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="text-right">
-                                                <p className="text-lg font-black" style={{ color: conf.color }}>{e.weightedAvg.toFixed(1)}</p>
-                                                <p className="text-[9px] text-white/30 uppercase tracking-tighter">Score</p>
+                                            <div className="flex items-center gap-2">
+                                                <div className="text-right mr-2">
+                                                    <p className="text-lg font-black" style={{ color: conf.color }}>{e.weightedAvg.toFixed(1)}</p>
+                                                    <p className="text-[9px] text-white/30 uppercase tracking-tighter">Score</p>
+                                                </div>
+                                                <div className="flex flex-col gap-1">
+                                                    <button 
+                                                        onClick={() => handleShare(e)}
+                                                        className="p-2 rounded-lg bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                                                        title="Condividi"
+                                                    >
+                                                        <Share2 size={14} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleDelete(e.id)}
+                                                        className="p-2 rounded-lg bg-white/5 border border-white/10 text-red-500/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                                                        title="Elimina"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     )
@@ -350,6 +389,12 @@ export default function StatsPage() {
             }
 
             <div className="h-4" />
+
+            <ShareModal 
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+                entry={selectedEntryForShare}
+            />
         </div >
     )
 }

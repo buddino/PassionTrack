@@ -183,7 +183,7 @@ export const saveEntry = (entry: Omit<PerformanceEntry, 'id'>): PerformanceEntry
     // Find missing fields and ensure default arrays are correct length based on type
     const newEntry: PerformanceEntry = {
         ...entry,
-        id: crypto.randomUUID(),
+        id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11),
     }
     state.entries.unshift(newEntry) // Add to the beginning
 
